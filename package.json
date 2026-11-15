@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "files": [
+    "ACKNOWLEDGMENTS",
+    "Apache-License-2.0.txt",
     "dist/*"
   ],
   "scripts": {

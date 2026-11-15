@@ -12,9 +12,6 @@ export default defineConfig({
       // the proper extensions will be added
       // fileName: 'my-lib',
     },
-    license: {
-      fileName: 'LICENCE.md'
-    },
     rolldownOptions: {
       output: {
         entryFileNames: `[name].js`,
