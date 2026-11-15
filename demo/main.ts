@@ -6,12 +6,16 @@ async function hello(query: string) {
   const module = await SQLiteESMFactory();
   const sqlite3 = SQLite.Factory(module);
 
-  const vfs = await MyVFS.create('hello', module, 'http://localhost:5173/northwind.db');
+  const vfs = await MyVFS.create(
+    'hello',
+    module,
+    'http://localhost:5173/northwind.db'
+  );
 
   sqlite3.vfs_register(vfs, true);
 
   const db = await sqlite3.open_v2('test',
-    SQLite.SQLITE_OPEN_READWRITE);
+    SQLite.SQLITE_READONLY);
 
   const schemas: (string | null)[] = [];
 
