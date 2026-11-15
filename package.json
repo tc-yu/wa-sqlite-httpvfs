@@ -1,0 +1,20 @@
+{
+  "name": "wa-sqlite-httpvfs",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite ./demo",
+    "build": "tsc && vite build",
+    "build:demo": "tsc && vite build demo",
+    "preview:demo": "vite preview demo"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.5"
+  },
+  "dependencies": {
+    "wa-sqlite": "github:rhashimoto/wa-sqlite#v1.2.0"
+  }
+}
