@@ -15,9 +15,10 @@
   "devDependencies": {
     "@types/node": "^24.19.2",
     "typescript": "~7.0.2",
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "wa-sqlite": "github:rhashimoto/wa-sqlite#v1.2.0"
   },
-  "dependencies": {
+  "peerDependencies": {
     "wa-sqlite": "github:rhashimoto/wa-sqlite#v1.2.0"
   }
 }

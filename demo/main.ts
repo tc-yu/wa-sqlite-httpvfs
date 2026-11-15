@@ -15,7 +15,7 @@ async function hello(query: string) {
   sqlite3.vfs_register(vfs, true);
 
   const db = await sqlite3.open_v2('test',
-    SQLite.SQLITE_READONLY);
+    SQLite.SQLITE_OPEN_READONLY);
 
   const schemas: (string | null)[] = [];
 

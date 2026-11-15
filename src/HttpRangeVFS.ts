@@ -154,6 +154,7 @@ export class HttpRangeVFS extends FacadeVFS {
     return VFS.SQLITE_OK;
   }
 
+  // TODO: implement constant
   async jAccess(name: string, _flags: number, pResOut: DataView): Promise<number> {
     const url = new URL(name, 'file://');
     const pathname = url.pathname;
@@ -162,7 +163,4 @@ export class HttpRangeVFS extends FacadeVFS {
     pResOut.setInt32(0, file ? 1 : 0, true);
     return VFS.SQLITE_OK;
   }
-
 }
-
-
