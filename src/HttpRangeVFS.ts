@@ -1,6 +1,5 @@
 // Copyright 2024 Roy T. Hashimoto.
 
-
 import { FacadeVFS } from "wa-sqlite/src/FacadeVFS.js";
 import * as VFS from "wa-sqlite/src/VFS.js";
 
@@ -50,7 +49,7 @@ export class HttpRangeVFS extends FacadeVFS {
 
     const pathname = url.pathname;
 
-    console.log(response.headers);
+    // console.log(response.headers);
 
     const contentLength = response.headers.get("content-length");
     const size = contentLength ? parseInt(contentLength, 10) : 0;
@@ -97,17 +96,17 @@ export class HttpRangeVFS extends FacadeVFS {
     pData: Uint8Array,
     iOffset: number,
   ): Promise<number> {
-    console.log(pFile);
-    console.log(this.mapIdToFile);
+    // console.log(pFile);
+    // console.log(this.mapIdToFile);
 
     const file = this.mapIdToFile.get(pFile);
 
-    console.log(file);
+    // console.log(file);
 
     const fileSize = file.size;
 
-    console.log(iOffset);
-    console.log(pData);
+    // console.log(iOffset);
+    // console.log(pData);
     // Handle out-of-bounds reads
     if (iOffset >= fileSize) {
       return VFS.SQLITE_IOERR_SHORT_READ;
@@ -160,17 +159,22 @@ export class HttpRangeVFS extends FacadeVFS {
     return VFS.SQLITE_OK;
   }
 
-  // TODO: implement constant
   async jAccess(
     name: string,
-    _flags: number,
+    flags: number,
     pResOut: DataView,
   ): Promise<number> {
-    const url = new URL(name, "file://");
-    const pathname = url.pathname;
-
-    const file = this.mapNameToFile.get(pathname);
-    pResOut.setInt32(0, file ? 1 : 0, true);
+    if (name.endsWith("-journal") || name.endsWith("-wal")) {
+      // Short-circuit journal and WAL checks
+      pResOut.setInt32(0, 0, true);
+    } else if (flags === VFS.SQLITE_ACCESS_READWRITE) {
+      // Strictly read-only
+      pResOut.setInt32(0, 0, true);
+    } else {
+      // TODO: Extensions and ATTACH check?
+      // const exists = bool;
+      // pResOut.setInt32(0, exists ? 1 : 0, true);
+    }
     return VFS.SQLITE_OK;
   }
 }

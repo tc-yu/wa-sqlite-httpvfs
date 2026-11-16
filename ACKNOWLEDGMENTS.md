@@ -1,6 +1,7 @@
 # Acknowledgments
 
 ## [sql.js-httpvfs](https://github.com/phiresky/sql.js-httpvfs)
+
 This project is inspired by it, and motivated by the original author's suggestion to implement it with `wa-sqlte`
 
 Copyright (c) phiresky
@@ -8,6 +9,7 @@ Copyright (c) phiresky
 Licensed under Apache-2.0 (see [Third-Party-License/Apache-License-2.0](Third-Party-License/Apache-License-2.0)).
 
 ## [wa-sqlite](https://github.com/rhashimoto/wa-sqlite)
+
 The VFS implementaion itself is based on the provided example.
 
 MIT License
@@ -33,6 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## [demo/public/northwind.db](demo/public/northwind.db)
+
 MIT License
 
 Copyright (c) Microsoft Corporation \
