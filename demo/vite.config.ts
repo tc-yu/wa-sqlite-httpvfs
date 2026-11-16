@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 
 export default defineConfig({
   server: {
@@ -14,12 +14,12 @@ export default defineConfig({
     },
     headers: {
       // Required for SharedArrayBuffer & multi-threaded Web Workers
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
     },
   },
   optimizeDeps: {
-    exclude: ['wa-sqlite'],
+    exclude: ["wa-sqlite"],
   },
-  appType: 'mpa',
+  appType: "mpa",
 });

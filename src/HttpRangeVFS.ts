@@ -1,8 +1,10 @@
-import { FacadeVFS } from 'wa-sqlite/src/FacadeVFS.js'
-import * as VFS from 'wa-sqlite/src/VFS.js'
+// Copyright 2024 Roy T. Hashimoto.
+
+
+import { FacadeVFS } from "wa-sqlite/src/FacadeVFS.js";
+import * as VFS from "wa-sqlite/src/VFS.js";
 
 export class HttpRangeVFS extends FacadeVFS {
-
   // Map of existing files, keyed by filename.
   mapNameToFile = new Map();
 
@@ -15,15 +17,14 @@ export class HttpRangeVFS extends FacadeVFS {
     return vfs;
   }
 
-  private baseUrl: string
-  private fileSizes: Map<any, any>
+  private baseUrl: string;
+  private fileSizes: Map<any, any>;
 
   constructor(name: string, module: object, baseUrl: string) {
     super(name, module);
-    this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash 
+    this.baseUrl = baseUrl.replace(/\/$/, ""); // Remove trailing slash
     // if present
     this.fileSizes = new Map();
-
   }
 
   async close() {
@@ -32,22 +33,26 @@ export class HttpRangeVFS extends FacadeVFS {
     }
   }
 
-  async jOpen(_filename: string | null, pFile: number, flags: number, pOutFlags: DataView): Promise<number> {
-
+  async jOpen(
+    _filename: string | null,
+    pFile: number,
+    flags: number,
+    pOutFlags: DataView,
+  ): Promise<number> {
     // Check does remote sqlite DB exists
     const url = new URL(this.baseUrl);
-    const response = await fetch(url, { method: 'HEAD' });
+    const response = await fetch(url, { method: "HEAD" });
 
     if (!response.ok) {
-      console.log('failed')
+      console.log("failed");
       return VFS.SQLITE_CANTOPEN;
     }
 
     const pathname = url.pathname;
 
-    console.log(response.headers)
+    console.log(response.headers);
 
-    const contentLength = response.headers.get('content-length');
+    const contentLength = response.headers.get("content-length");
     const size = contentLength ? parseInt(contentLength, 10) : 0;
     this.fileSizes.set(pathname, size);
 
@@ -87,20 +92,22 @@ export class HttpRangeVFS extends FacadeVFS {
     return VFS.SQLITE_OK;
   }
 
-
-  async jRead(pFile: number, pData: Uint8Array, iOffset: number): Promise<number> {
-
-    console.log(pFile)
-    console.log(this.mapIdToFile)
+  async jRead(
+    pFile: number,
+    pData: Uint8Array,
+    iOffset: number,
+  ): Promise<number> {
+    console.log(pFile);
+    console.log(this.mapIdToFile);
 
     const file = this.mapIdToFile.get(pFile);
 
-    console.log(file)
+    console.log(file);
 
-    const fileSize = file.size
+    const fileSize = file.size;
 
-    console.log(iOffset)
-    console.log(pData)
+    console.log(iOffset);
+    console.log(pData);
     // Handle out-of-bounds reads
     if (iOffset >= fileSize) {
       return VFS.SQLITE_IOERR_SHORT_READ;
@@ -114,8 +121,8 @@ export class HttpRangeVFS extends FacadeVFS {
     try {
       const response = await fetch(file.url, {
         headers: {
-          Range: `bytes=${iOffset}-${endOffset}`
-        }
+          Range: `bytes=${iOffset}-${endOffset}`,
+        },
       });
 
       if (!response.ok && response.status !== 206) {
@@ -125,7 +132,6 @@ export class HttpRangeVFS extends FacadeVFS {
       const buffer = await response.arrayBuffer();
 
       // console.log(buffer)
-
 
       const bytes = new Uint8Array(buffer, 0, availableBytes);
 
@@ -142,7 +148,7 @@ export class HttpRangeVFS extends FacadeVFS {
 
       return VFS.SQLITE_OK;
     } catch (error) {
-      console.error('Network error during xRead:', error);
+      console.error("Network error during xRead:", error);
       return VFS.SQLITE_IOERR_READ;
     }
   }
@@ -155,8 +161,12 @@ export class HttpRangeVFS extends FacadeVFS {
   }
 
   // TODO: implement constant
-  async jAccess(name: string, _flags: number, pResOut: DataView): Promise<number> {
-    const url = new URL(name, 'file://');
+  async jAccess(
+    name: string,
+    _flags: number,
+    pResOut: DataView,
+  ): Promise<number> {
+    const url = new URL(name, "file://");
     const pathname = url.pathname;
 
     const file = this.mapNameToFile.get(pathname);

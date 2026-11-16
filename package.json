@@ -5,17 +5,19 @@
   "type": "module",
   "files": [
     "ACKNOWLEDGMENTS",
-    "Apache-License-2.0.txt",
+    "Third-Party-License",
     "dist/*"
   ],
   "scripts": {
     "dev": "vite ./demo",
     "build": "tsc && vite build",
     "build:demo": "tsc && vite build demo",
-    "preview:demo": "vite preview demo"
+    "preview:demo": "vite preview demo",
+    "format": "prettier . --write"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
+    "prettier": "3.10.1",
     "typescript": "~7.0.2",
     "vite": "^8.3.5",
     "wa-sqlite": "github:rhashimoto/wa-sqlite#v1.2.0"

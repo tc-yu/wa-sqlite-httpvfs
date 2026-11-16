@@ -20,9 +20,8 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
 
-
     "allowJs": true,
-    "maxNodeModuleJsDepth": 2,
+    "maxNodeModuleJsDepth": 2
   },
   "include": ["src", "demo/main.ts"]
 }
