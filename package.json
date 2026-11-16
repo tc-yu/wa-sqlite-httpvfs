@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "license": "BSD-3-Clause",
   "files": [
     "ACKNOWLEDGMENTS",
     "Third-Party-License",
@@ -10,7 +11,7 @@
   ],
   "scripts": {
     "dev": "vite ./demo",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --app",
     "build:demo": "tsc && vite build demo",
     "preview:demo": "vite preview demo",
     "format": "prettier . --write"

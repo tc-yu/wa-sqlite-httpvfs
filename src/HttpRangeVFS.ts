@@ -1,5 +1,13 @@
-// Copyright 2024 Roy T. Hashimoto.
-
+/*!
+ * Copyright (c) 2026 T.C YU
+ * Licensed under the BSD-3-Clause License.
+ *
+ * Modified from example VFS code from wa-sqlite:
+ * Copyright (c) 2024 Roy T. Hashimoto
+ * Licensed under the MIT License.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause AND MIT
+ */
 import { FacadeVFS } from "wa-sqlite/src/FacadeVFS.js";
 import * as VFS from "wa-sqlite/src/VFS.js";
 
