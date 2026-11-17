@@ -10,7 +10,7 @@
     "dist/*"
   ],
   "bin": {
-    "prepare_db": "dist/prepareDB.js"
+    "prepare_db": "dist/prepareDb.js"
   },
   "scripts": {
     "dev": "vite ./demo",
