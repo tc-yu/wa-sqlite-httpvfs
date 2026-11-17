@@ -9,6 +9,9 @@
     "Third-Party-License",
     "dist/*"
   ],
+  "bin": {
+    "prepare_db": "dist/prepareDB.js"
+  },
   "scripts": {
     "dev": "vite ./demo",
     "build": "tsc && vite build --app",
