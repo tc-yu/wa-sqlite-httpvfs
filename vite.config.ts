@@ -20,6 +20,7 @@ export default defineConfig({
             },
             entryFileNames: `[name].js`,
           },
+          external: [/^wa-sqlite($|\/)/],
         },
       },
     },
