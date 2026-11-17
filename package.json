@@ -14,7 +14,7 @@
   },
   "scripts": {
     "dev": "vite ./demo",
-    "build": "tsc && vite build --app",
+    "build": "vite build --app && tsc",
     "build:demo": "tsc && vite build demo",
     "preview:demo": "vite preview demo",
     "format": "prettier . --write"

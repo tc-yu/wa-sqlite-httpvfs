@@ -1,6 +1,6 @@
 import SQLiteESMFactory from "wa-sqlite/dist/wa-sqlite-async.mjs";
 import * as SQLite from "wa-sqlite";
-import { HttpRangeVFS as MyVFS } from "../src/HttpRangeVFS.js";
+import { HttpRangeVFS as MyVFS } from "../dist/";
 
 async function hello(query: string) {
   const module = await SQLiteESMFactory();

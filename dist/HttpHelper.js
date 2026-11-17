@@ -1,3 +1,4 @@
+// src/HttpHelper.ts
 /*!
 * Copyright (c) [Original Year] [Original Author]
 * Ported to JavaScript from [Original Project] by T.C YU in 2026.

@@ -1,4 +1,6 @@
-Object.defineProperty(exports,Symbol.toStringTag,{value:`Module`});var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=Object.getOwnPropertyNames,i=Object.getPrototypeOf,a=Object.prototype.hasOwnProperty,o=(e,i,o,s)=>{if(i&&typeof i==`object`||typeof i==`function`)for(var c=r(i),l=0,u=c.length,d;l<u;l++)d=c[l],!a.call(e,d)&&d!==o&&t(e,d,{get:(e=>i[e]).bind(null,d),enumerable:!(s=n(i,d))||s.enumerable});return e},s=(n,r,s)=>(s=n==null?{}:e(i(n)),o(r||!n||!n.__esModule||!a.call(n,`default`)?t(s,`default`,{value:n,enumerable:!0}):s,n));let c=require("wa-sqlite/src/FacadeVFS.js"),l=require("wa-sqlite/src/VFS.js");l=s(l,1);
+import { FacadeVFS as e } from "wa-sqlite/src/FacadeVFS.js";
+import * as t from "wa-sqlite/src/VFS.js";
+// src/HttpRangeVFS.ts
 /*!
 * Copyright (c) 2026 T.C YU
 * Licensed under the BSD-3-Clause License.
@@ -9,4 +11,54 @@ Object.defineProperty(exports,Symbol.toStringTag,{value:`Module`});var e=Object.
 *
 * SPDX-License-Identifier: BSD-3-Clause AND MIT
 */
-var u=class e extends c.FacadeVFS{mapNameToFile=new Map;mapIdToFile=new Map;static async create(t,n,r){let i=new e(t,n,r);return await i.isReady(),i}baseUrl;fileSizes;constructor(e,t,n){super(e,t),this.baseUrl=n.replace(/\/$/,``),this.fileSizes=new Map}async close(){for(let e of this.mapIdToFile.keys())this.jClose(e)}async jOpen(e,t,n,r){let i=new URL(this.baseUrl),a=await fetch(i,{method:`HEAD`});if(!a.ok)return console.log(`failed`),l.SQLITE_CANTOPEN;let o=i.pathname,s=a.headers.get(`content-length`),c=s?parseInt(s,10):0;return this.fileSizes.set(o,c),this.mapIdToFile.set(t,{url:i,chunkSize:4096,size:c,cache:new Map}),r.setInt32(0,n|l.SQLITE_OPEN_READONLY,!0),l.SQLITE_OK}async jClose(e){return this.mapIdToFile.delete(e),l.SQLITE_OK}async jRead(e,t,n){let r=this.mapIdToFile.get(e),i=r.size;if(n>=i)return l.SQLITE_IOERR_SHORT_READ;let a=Math.min(t.byteLength,i-n),o=n+a-1;try{let e=await fetch(r.url,{headers:{Range:`bytes=${n}-${o}`}});if(!e.ok&&e.status!==206)return l.SQLITE_IOERR_READ;let i=await e.arrayBuffer(),s=new Uint8Array(i,0,a);return t.set(s),l.SQLITE_OK}catch(e){return console.error(`Network error during xRead:`,e),l.SQLITE_IOERR_READ}}async jFileSize(e,t){let n=this.mapIdToFile.get(e);return t.setBigInt64(0,BigInt(n.size),!0),l.SQLITE_OK}async jAccess(e,t,n){return(e.endsWith(`-journal`)||e.endsWith(`-wal`)||t===l.SQLITE_ACCESS_READWRITE)&&n.setInt32(0,0,!0),l.SQLITE_OK}};exports.HttpRangeVFS=u;
+var n = class n extends e {
+	mapNameToFile = /* @__PURE__ */ new Map();
+	mapIdToFile = /* @__PURE__ */ new Map();
+	static async create(e, t, r) {
+		let i = new n(e, t, r);
+		return await i.isReady(), i;
+	}
+	baseUrl;
+	fileSizes;
+	constructor(e, t, n) {
+		super(e, t), this.baseUrl = n.replace(/\/$/, ""), this.fileSizes = /* @__PURE__ */ new Map();
+	}
+	async close() {
+		for (let e of this.mapIdToFile.keys()) this.jClose(e);
+	}
+	async jOpen(e, n, r, i) {
+		let a = new URL(this.baseUrl), o = await fetch(a, { method: "HEAD" });
+		if (!o.ok) return console.log("failed"), t.SQLITE_CANTOPEN;
+		let s = a.pathname, c = o.headers.get("content-length"), l = c ? parseInt(c, 10) : 0;
+		return this.fileSizes.set(s, l), this.mapIdToFile.set(n, {
+			url: a,
+			chunkSize: 4096,
+			size: l,
+			cache: /* @__PURE__ */ new Map()
+		}), i.setInt32(0, r | t.SQLITE_OPEN_READONLY, !0), t.SQLITE_OK;
+	}
+	async jClose(e) {
+		return this.mapIdToFile.delete(e), t.SQLITE_OK;
+	}
+	async jRead(e, n, r) {
+		let i = this.mapIdToFile.get(e), a = i.size;
+		if (r >= a) return t.SQLITE_IOERR_SHORT_READ;
+		let o = Math.min(n.byteLength, a - r), s = r + o - 1;
+		try {
+			let e = await fetch(i.url, { headers: { Range: `bytes=${r}-${s}` } });
+			if (!e.ok && e.status !== 206) return t.SQLITE_IOERR_READ;
+			let a = await e.arrayBuffer(), c = new Uint8Array(a, 0, o);
+			return n.set(c), t.SQLITE_OK;
+		} catch (e) {
+			return console.error("Network error during xRead:", e), t.SQLITE_IOERR_READ;
+		}
+	}
+	async jFileSize(e, n) {
+		let r = this.mapIdToFile.get(e);
+		return n.setBigInt64(0, BigInt(r.size), !0), t.SQLITE_OK;
+	}
+	async jAccess(e, n, r) {
+		return (e.endsWith("-journal") || e.endsWith("-wal") || n === t.SQLITE_ACCESS_READWRITE) && r.setInt32(0, 0, !0), t.SQLITE_OK;
+	}
+};
+export { n as HttpRangeVFS };

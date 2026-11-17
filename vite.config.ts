@@ -10,7 +10,7 @@ export default defineConfig({
             index: resolve(import.meta.dirname, "src/index.ts"),
             HttpHelper: resolve(import.meta.dirname, "src/HttpHelper.ts"),
           },
-          name: "wa-sqlite-httpvfs",
+          formats: ["es"],
         },
         rolldownOptions: {
           output: {
@@ -44,7 +44,7 @@ export default defineConfig({
             banner: (chunk) => {
               // Add shebang only to the CLI entry points
               if (chunk.name === "prepareDb") {
-                return "#!/usr/bin/env node";
+                return "#!/usr/bin/env node\n";
               }
               return "";
             },
