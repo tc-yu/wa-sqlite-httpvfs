@@ -32,21 +32,48 @@ export function checkAndOptimizeDatabase(
   pageSize: number,
   optimizeDb: boolean,
 ) {
-  const db = new DatabaseSync(dbPath);
+  let db: DatabaseSync;
 
-  db.close();
-  // try {
-  //   // 1. Switch out of WAL mode first (WAL ignores page_size changes and leaves -wal/-shm files)
-  //   db.exec("PRAGMA journal_mode = DELETE;");
+  // Check is input a sqlite file with read only mode
+  db = new DatabaseSync(dbPath, { readOnly: true });
+  try {
+    db.prepare("PRAGMA schema_version").get();
+  } catch (err) {
+    throw new Error(`Invalide sqlite file: ${err}`);
+  } finally {
+    db.close();
+  }
 
-  //   // 2. Set the target page size
-  //   db.exec(`PRAGMA page_size = ${pageSize};`);
+  if (optimizeDb) {
+    db = new DatabaseSync(dbPath);
 
-  //
-  //   db.exec("VACUUM;");
-  // } finally {
-  //   db.close();
-  // }
+    try {
+      // 1. Switch out of WAL mode first (WAL ignores page_size changes and leaves -wal/-shm files)
+      db.exec("PRAGMA journal_mode = DELETE;");
+      // 2. Set the target page size
+      db.exec(`PRAGMA page_size = ${pageSize};`);
+
+      const ftsTables = db
+        .prepare(
+          `SELECT name FROM sqlite_schema
+             WHERE type = 'table'
+             AND (
+               sql LIKE '%USING fts5%'
+               OR sql LIKE '%USING fts4%'
+               OR sql LIKE '%USING fts3%'
+             )`,
+        )
+        .all() as { name: string }[];
+
+      for (const { name } of ftsTables) {
+        const escaped = `"${name.replaceAll('"', '""')}"`;
+        db.exec(`INSERT INTO ${escaped}(${escaped}) VALUES ('optimize');`);
+      }
+      db.exec("VACUUM;");
+    } finally {
+      db.close();
+    }
+  }
 }
 
 function parseByteSize(input: string): number {
@@ -67,6 +94,40 @@ function parseByteSize(input: string): number {
   };
 
   return Math.floor(value * multipliers[unit]);
+}
+
+export interface FileChunk {
+  index: number;
+  data: Buffer;
+}
+
+async function* chunkFile(
+  filePath: string,
+  chunkSize: number,
+): AsyncGenerator<FileChunk> {
+  if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
+    throw new Error(
+      `Invalid chunk size: ${chunkSize}. Must be a positive integer.`,
+    );
+  }
+
+  const handle = await open(filePath, "r");
+  try {
+    const buffer = Buffer.allocUnsafe(chunkSize);
+    let index = 0;
+
+    while (true) {
+      const { bytesRead } = await handle.read(buffer, 0, chunkSize, null);
+      if (bytesRead === 0) break;
+
+      yield {
+        index: index++,
+        data: Buffer.from(buffer.subarray(0, bytesRead)),
+      };
+    }
+  } finally {
+    await handle.close();
+  }
 }
 
 export async function runCli(argv: string[]): Promise<void> {
@@ -124,31 +185,28 @@ export async function runCli(argv: string[]): Promise<void> {
       );
     }
   }
-  // const chunkSize = inputChunkSize;
+  const chunkSize = inputChunkSize;
 
   checkAndOptimizeDatabase(inputPath, pageSize, values.optimize_db);
 
-  process.exitCode = 0;
-  return;
+  const outDir = values.out_dir ? resolve(values.out_dir) : dirname(inputPath);
+  const baseName = basename(inputPath);
+  const totalChunks = Math.ceil(fileInfo.size / chunkSize);
+  const padWidth = Math.max(3, String(totalChunks).length);
 
-  // const outDir = values.out ? resolve(values.out) : dirname(inputPath);
-  // const baseName = basename(inputPath);
-  // const totalChunks = Math.ceil(fileInfo.size / chunkSize);
-  // const padWidth = Math.max(3, String(totalChunks).length);
+  await mkdir(outDir, { recursive: true });
 
-  // await mkdir(outDir, { recursive: true });
+  let written = 0;
+  for await (const { index, data } of chunkFile(inputPath, chunkSize)) {
+    const suffix = String(index).padStart(padWidth, "0");
+    const chunkPath = join(outDir, `${baseName}.${suffix}`);
+    await writeFile(chunkPath, data);
+    written++;
+  }
 
-  // let written = 0;
-  // for await (const { index, data } of chunkFile(inputPath, chunkSize)) {
-  //   const suffix = String(index).padStart(padWidth, "0");
-  //   const chunkPath = join(outDir, `${baseName}.part${suffix}`);
-  //   await writeFile(chunkPath, data);
-  //   written++;
-  // }
-
-  // console.log(
-  //   `Created ${written} chunks (${chunkSize} bytes max) in ${outDir}`,
-  // );
+  console.log(
+    `Created ${written} chunks (${chunkSize} bytes max) in ${outDir}`,
+  );
 }
 
 if (

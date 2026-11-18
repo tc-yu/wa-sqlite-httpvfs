@@ -25,5 +25,5 @@
 
     // "rootDir": "src",
     "outDir": "demo/dist"
-  },
+  }
 }

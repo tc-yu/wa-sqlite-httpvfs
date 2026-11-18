@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { DatabaseSync } from "node:sqlite";
-import { stat } from "node:fs/promises";
-import { resolve } from "node:path";
+import { mkdir, open, stat, writeFile } from "node:fs/promises";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 // src/prepareDb.ts
@@ -29,7 +29,36 @@ var VALID_PAGE_SIZES = [
 	65536
 ];
 function checkAndOptimizeDatabase(dbPath, pageSize, optimizeDb) {
-	new DatabaseSync(dbPath).close();
+	let db;
+	db = new DatabaseSync(dbPath, { readOnly: true });
+	try {
+		db.prepare("PRAGMA schema_version").get();
+	} catch (err) {
+		throw new Error(`Invalide sqlite file: ${err}`);
+	} finally {
+		db.close();
+	}
+	if (optimizeDb) {
+		db = new DatabaseSync(dbPath);
+		try {
+			db.exec("PRAGMA journal_mode = DELETE;");
+			db.exec(`PRAGMA page_size = ${pageSize};`);
+			const ftsTables = db.prepare(`SELECT name FROM sqlite_schema
+             WHERE type = 'table'
+             AND (
+               sql LIKE '%USING fts5%'
+               OR sql LIKE '%USING fts4%'
+               OR sql LIKE '%USING fts3%'
+             )`).all();
+			for (const { name } of ftsTables) {
+				const escaped = `"${name.replaceAll("\"", "\"\"")}"`;
+				db.exec(`INSERT INTO ${escaped}(${escaped}) VALUES ('optimize');`);
+			}
+			db.exec("VACUUM;");
+		} finally {
+			db.close();
+		}
+	}
 }
 function parseByteSize(input) {
 	const match = /^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB)?$/i.exec(input.trim());
@@ -42,6 +71,24 @@ function parseByteSize(input) {
 		MB: 1024 ** 2,
 		GB: 1024 ** 3
 	}[unit]);
+}
+async function* chunkFile(filePath, chunkSize) {
+	if (!Number.isInteger(chunkSize) || chunkSize <= 0) throw new Error(`Invalid chunk size: ${chunkSize}. Must be a positive integer.`);
+	const handle = await open(filePath, "r");
+	try {
+		const buffer = Buffer.allocUnsafe(chunkSize);
+		let index = 0;
+		while (true) {
+			const { bytesRead } = await handle.read(buffer, 0, chunkSize, null);
+			if (bytesRead === 0) break;
+			yield {
+				index: index++,
+				data: Buffer.from(buffer.subarray(0, bytesRead))
+			};
+		}
+	} finally {
+		await handle.close();
+	}
 }
 async function runCli(argv) {
 	const { values, positionals } = parseArgs({
@@ -83,7 +130,8 @@ async function runCli(argv) {
 		return;
 	}
 	const inputPath = resolve(positionals[0]);
-	if (!(await stat(inputPath)).isFile()) throw new Error(`Path is not a regular file: ${inputPath}`);
+	const fileInfo = await stat(inputPath);
+	if (!fileInfo.isFile()) throw new Error(`Path is not a regular file: ${inputPath}`);
 	const pageSize = parseByteSize(values.page_size);
 	if (!VALID_PAGE_SIZES.includes(pageSize)) throw new Error(`Page size is invalid, must be a power of two between 512 and 65536, inclusive`);
 	let inputChunkSize;
@@ -92,8 +140,21 @@ async function runCli(argv) {
 		inputChunkSize = parseByteSize(values.chunk_size);
 		if (inputChunkSize % pageSize != 0) throw new Error(`chunk_size is invalid, must be a multiple of page_size: ${pageSize}`);
 	}
+	const chunkSize = inputChunkSize;
 	checkAndOptimizeDatabase(inputPath, pageSize, values.optimize_db);
-	process.exitCode = 0;
+	const outDir = values.out_dir ? resolve(values.out_dir) : dirname(inputPath);
+	const baseName = basename(inputPath);
+	const totalChunks = Math.ceil(fileInfo.size / chunkSize);
+	const padWidth = Math.max(3, String(totalChunks).length);
+	await mkdir(outDir, { recursive: true });
+	let written = 0;
+	for await (const { index, data } of chunkFile(inputPath, chunkSize)) {
+		const suffix = String(index).padStart(padWidth, "0");
+		const chunkPath = join(outDir, `${baseName}.${suffix}`);
+		await writeFile(chunkPath, data);
+		written++;
+	}
+	console.log(`Created ${written} chunks (${chunkSize} bytes max) in ${outDir}`);
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) runCli(process.argv.slice(2)).catch((err) => {
 	console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
