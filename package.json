@@ -28,5 +28,8 @@
   },
   "peerDependencies": {
     "wa-sqlite": "github:rhashimoto/wa-sqlite#v1.2.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

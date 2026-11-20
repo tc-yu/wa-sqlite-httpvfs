@@ -13,10 +13,15 @@
  */
 
 import { DatabaseSync } from "node:sqlite";
-import { mkdir, open, stat, writeFile } from "node:fs/promises";
+import { mkdir, rm, open, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+// import { createHash, Hash } from "node:crypto";
+
+// import { chunkFileWithHash, chunkFile, FileChunk } from "./chunkFileHelper";
+
+import { chunkFileWithHash, type FileChunk } from "./chunkFileHelper.ts";
 
 const VALID_PAGE_SIZES = [512, 1024, 2048, 4096, 8192, 16384, 32768, 65536];
 
@@ -96,40 +101,6 @@ function parseByteSize(input: string): number {
   return Math.floor(value * multipliers[unit]);
 }
 
-export interface FileChunk {
-  index: number;
-  data: Buffer;
-}
-
-async function* chunkFile(
-  filePath: string,
-  chunkSize: number,
-): AsyncGenerator<FileChunk> {
-  if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
-    throw new Error(
-      `Invalid chunk size: ${chunkSize}. Must be a positive integer.`,
-    );
-  }
-
-  const handle = await open(filePath, "r");
-  try {
-    const buffer = Buffer.allocUnsafe(chunkSize);
-    let index = 0;
-
-    while (true) {
-      const { bytesRead } = await handle.read(buffer, 0, chunkSize, null);
-      if (bytesRead === 0) break;
-
-      yield {
-        index: index++,
-        data: Buffer.from(buffer.subarray(0, bytesRead)),
-      };
-    }
-  } finally {
-    await handle.close();
-  }
-}
-
 export async function runCli(argv: string[]): Promise<void> {
   const { values, positionals } = parseArgs({
     args: argv,
@@ -194,15 +165,57 @@ export async function runCli(argv: string[]): Promise<void> {
   const totalChunks = Math.ceil(fileInfo.size / chunkSize);
   const padWidth = Math.max(3, String(totalChunks).length);
 
+  await rm(outDir, { recursive: true });
   await mkdir(outDir, { recursive: true });
 
   let written = 0;
-  for await (const { index, data } of chunkFile(inputPath, chunkSize)) {
-    const suffix = String(index).padStart(padWidth, "0");
+  const generator = chunkFileWithHash(inputPath, chunkSize);
+  let finalHash = "";
+
+  while (true) {
+    const { value, done } = await generator.next();
+
+    if (done) {
+      // The return value (the hex string) is placed in `value` when `done` is true
+      finalHash = value as string;
+      break;
+    }
+
+    // Process the FileChunk
+    const chunk = value as FileChunk;
+    // console.log(`Chunk ${chunk.index}: ${chunk.data.length} bytes`);
+
+    const suffix = String(chunk.index).padStart(padWidth, "0");
     const chunkPath = join(outDir, `${baseName}.${suffix}`);
-    await writeFile(chunkPath, data);
+    await writeFile(chunkPath, chunk.data);
     written++;
   }
+
+  console.log(`Final File SHA-256: ${finalHash}`);
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  const stamp =
+    now.getUTCFullYear() +
+    pad(now.getUTCMonth() + 1) + // Months are 0-indexed in JS
+    pad(now.getUTCDate()) +
+    pad(now.getUTCHours()) +
+    pad(now.getUTCMinutes()) +
+    pad(now.getUTCSeconds());
+
+  const metaJson = {
+    databaseLengthBytes: fileInfo.size,
+    databaseSha256: finalHash,
+    requestChunkSize: pageSize,
+    serverChunkSize: chunkSize,
+    serverMode: "chunked",
+    suffixLength: 3,
+    urlPrefix: `${stamp}${finalHash.slice(0, 8)}/${baseName}.`,
+    version: `${stamp}${finalHash.slice(0, 8)}`,
+  };
+
+  await writeFile(join(outDir, "meta.json"), JSON.stringify(metaJson, null, 2));
 
   console.log(
     `Created ${written} chunks (${chunkSize} bytes max) in ${outDir}`,

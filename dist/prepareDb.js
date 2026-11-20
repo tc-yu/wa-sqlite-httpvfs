@@ -1,9 +1,33 @@
 #!/usr/bin/env node
 import { DatabaseSync } from "node:sqlite";
-import { mkdir, open, stat, writeFile } from "node:fs/promises";
+import { mkdir, open, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { createHash } from "node:crypto";
+// src/chunkFileHelper.ts
+async function* chunkFileWithHash(filePath, chunkSize) {
+	if (!Number.isInteger(chunkSize) || chunkSize <= 0) throw new Error(`Invalid chunk size: ${chunkSize}. Must be a positive integer.`);
+	const hasher = createHash("sha256");
+	const handle = await open(filePath, "r");
+	try {
+		const buffer = Buffer.allocUnsafe(chunkSize);
+		let index = 0;
+		while (true) {
+			const { bytesRead } = await handle.read(buffer, 0, chunkSize, null);
+			if (bytesRead === 0) break;
+			const slice = buffer.subarray(0, bytesRead);
+			hasher.update(slice);
+			yield {
+				index: index++,
+				data: Buffer.from(slice)
+			};
+		}
+		return hasher.digest("hex");
+	} finally {
+		await handle.close();
+	}
+}
 // src/prepareDb.ts
 /*!
 * Copyright (c) 2026 T.C YU
@@ -72,24 +96,6 @@ function parseByteSize(input) {
 		GB: 1024 ** 3
 	}[unit]);
 }
-async function* chunkFile(filePath, chunkSize) {
-	if (!Number.isInteger(chunkSize) || chunkSize <= 0) throw new Error(`Invalid chunk size: ${chunkSize}. Must be a positive integer.`);
-	const handle = await open(filePath, "r");
-	try {
-		const buffer = Buffer.allocUnsafe(chunkSize);
-		let index = 0;
-		while (true) {
-			const { bytesRead } = await handle.read(buffer, 0, chunkSize, null);
-			if (bytesRead === 0) break;
-			yield {
-				index: index++,
-				data: Buffer.from(buffer.subarray(0, bytesRead))
-			};
-		}
-	} finally {
-		await handle.close();
-	}
-}
 async function runCli(argv) {
 	const { values, positionals } = parseArgs({
 		args: argv,
@@ -146,14 +152,38 @@ async function runCli(argv) {
 	const baseName = basename(inputPath);
 	const totalChunks = Math.ceil(fileInfo.size / chunkSize);
 	const padWidth = Math.max(3, String(totalChunks).length);
+	await rm(outDir, { recursive: true });
 	await mkdir(outDir, { recursive: true });
 	let written = 0;
-	for await (const { index, data } of chunkFile(inputPath, chunkSize)) {
-		const suffix = String(index).padStart(padWidth, "0");
+	const generator = chunkFileWithHash(inputPath, chunkSize);
+	let finalHash = "";
+	while (true) {
+		const { value, done } = await generator.next();
+		if (done) {
+			finalHash = value;
+			break;
+		}
+		const chunk = value;
+		const suffix = String(chunk.index).padStart(padWidth, "0");
 		const chunkPath = join(outDir, `${baseName}.${suffix}`);
-		await writeFile(chunkPath, data);
+		await writeFile(chunkPath, chunk.data);
 		written++;
 	}
+	console.log(`Final File SHA-256: ${finalHash}`);
+	const now = /* @__PURE__ */ new Date();
+	const pad = (n) => String(n).padStart(2, "0");
+	const stamp = now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + pad(now.getUTCSeconds());
+	const metaJson = {
+		databaseLengthBytes: fileInfo.size,
+		databaseSha256: finalHash,
+		requestChunkSize: pageSize,
+		serverChunkSize: chunkSize,
+		serverMode: "chunked",
+		suffixLength: 3,
+		urlPrefix: `${stamp}${finalHash.slice(0, 8)}/${baseName}.`,
+		version: `${stamp}${finalHash.slice(0, 8)}`
+	};
+	await writeFile(join(outDir, "meta.json"), JSON.stringify(metaJson, null, 2));
 	console.log(`Created ${written} chunks (${chunkSize} bytes max) in ${outDir}`);
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) runCli(process.argv.slice(2)).catch((err) => {
