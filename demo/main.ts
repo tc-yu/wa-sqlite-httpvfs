@@ -1,13 +1,13 @@
 import SQLiteESMFactory from "wa-sqlite/dist/wa-sqlite-async.mjs";
 import * as SQLite from "wa-sqlite";
-import { HttpRangeVFS as MyVFS } from "../dist/";
+import { HttpRangeVFS } from "../dist";
 
 async function hello(query: string) {
   const module = await SQLiteESMFactory();
   const sqlite3 = SQLite.Factory(module);
 
-  const vfs = await MyVFS.create(
-    "hello",
+  const vfs = await HttpRangeVFS.create(
+    "http_range_vfs",
     module,
     "http://localhost:5173/northwind.db",
   );
