@@ -26,11 +26,20 @@ pnpm dev
 
 ## Installation
 
+```bash
+pnpm add rhashimoto/wa-sqlite#v1.2.0
+pnpm add tc-yu/wa-sqlite-httpvfs
+```
+
 ## Usage
 
 ## API Reference
 
 ## Building the Database (Page Size & Chunking)
+
+```
+pnpm prepare_db <path-to-db-file>
+```
 
 ## Contributing
 
