@@ -13,7 +13,7 @@
  */
 
 import { DatabaseSync } from "node:sqlite";
-import { mkdir, rm, open, stat, writeFile } from "node:fs/promises";
+import { mkdir, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";

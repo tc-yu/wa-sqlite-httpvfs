@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "strict": true,
+
     "target": "es2023",
     "module": "esnext",
     "lib": ["ES2023", "DOM"],
@@ -12,7 +14,7 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
-    // "noEmit": true,
+    "noEmit": true,
 
     /* Linting */
     "noUnusedLocals": true,
@@ -23,11 +25,7 @@
     "allowJs": true,
     "maxNodeModuleJsDepth": 2,
 
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "rootDir": "src",
-    "outDir": "dist"
+    "declaration": true
   },
-  "include": ["src"],
-  "exclude": ["src/prepareDb.ts"]
+  "include": ["src"]
 }
