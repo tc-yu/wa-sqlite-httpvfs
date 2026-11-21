@@ -9,17 +9,29 @@
  * SPDX-License-Identifier: BSD-3-Clause AND MIT
  */
 import { FacadeVFS } from "wa-sqlite/src/FacadeVFS.js";
+export interface ChunkedDbConfig {
+    serverChunkSize: number;
+    serverMode: "chunked";
+    suffixLength: number;
+    urlPrefix: string;
+    url: string;
+}
+export interface FullDbConfig {
+    serverMode: "full";
+    url: string;
+}
+export type DbConfig = ChunkedDbConfig | FullDbConfig;
 export declare class HttpRangeVFS extends FacadeVFS {
-    mapNameToFile: Map<any, any>;
-    mapIdToFile: Map<any, any>;
-    static create(name: string, module: object, baseUrl: string): Promise<HttpRangeVFS>;
-    private baseUrl;
-    private fileSizes;
-    constructor(name: string, module: object, baseUrl: string);
+    #private;
+    mapIdToFile: Map<number, any>;
+    static create(name: string, module: object, dbConfig: DbConfig): Promise<HttpRangeVFS>;
+    constructor(name: string, module: object, dbConfig: DbConfig);
+    get fileSize(): number;
+    get pageSize(): number;
     close(): Promise<void>;
     jOpen(_filename: string | null, pFile: number, flags: number, pOutFlags: DataView): Promise<number>;
-    jClose(fileId: number): Promise<number>;
-    jRead(pFile: number, pData: Uint8Array, iOffset: number): Promise<number>;
-    jFileSize(fileId: number, pSize64: DataView): Promise<number>;
+    jClose(pFile: number): Promise<number>;
+    jRead(_pFile: number, pData: Uint8Array, iOffset: number): Promise<number>;
+    jFileSize(_fileId: number, pSize64: DataView): Promise<number>;
     jAccess(name: string, flags: number, pResOut: DataView): Promise<number>;
 }

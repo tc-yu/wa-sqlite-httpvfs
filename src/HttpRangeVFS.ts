@@ -11,32 +11,64 @@
 import { FacadeVFS } from "wa-sqlite/src/FacadeVFS.js";
 import * as VFS from "wa-sqlite/src/VFS.js";
 
+import { SimpleBlockProvider } from "./BlockLayer";
+
+export interface ChunkedDbConfig {
+  serverChunkSize: number;
+  serverMode: "chunked";
+  suffixLength: number;
+  urlPrefix: string; // Use urlPrefix instead of full url
+  url: string;
+}
+
+export interface FullDbConfig {
+  serverMode: "full";
+  url: string;
+}
+
+export type DbConfig = ChunkedDbConfig | FullDbConfig;
+
 export class HttpRangeVFS extends FacadeVFS {
-  // Map of existing files, keyed by filename.
-  mapNameToFile = new Map();
-
   // Map of open files, keyed by id (sqlite3_file pointer).
-  mapIdToFile = new Map();
+  mapIdToFile: Map<number, any> = new Map();
 
-  static async create(name: string, module: object, baseUrl: string) {
-    const vfs = new HttpRangeVFS(name, module, baseUrl);
+  static async create(name: string, module: object, dbConfig: DbConfig) {
+    const vfs = new HttpRangeVFS(name, module, dbConfig);
     await vfs.isReady();
     return vfs;
   }
 
-  private baseUrl: string;
-  private fileSizes: Map<any, any>;
+  #_fileSize?: number;
+  #_pageSize?: number;
+  #blockProvider: SimpleBlockProvider;
+  #dbConfig: DbConfig;
 
-  constructor(name: string, module: object, baseUrl: string) {
+  constructor(name: string, module: object, dbConfig: DbConfig) {
     super(name, module);
-    this.baseUrl = baseUrl.replace(/\/$/, ""); // Remove trailing slash
     // if present
-    this.fileSizes = new Map();
+    this.#blockProvider = new SimpleBlockProvider();
+    this.#dbConfig = dbConfig;
+  }
+
+  get fileSize(): number {
+    if (this.#_fileSize === undefined) {
+      throw new Error("File size not properly discoverd");
+    }
+
+    return this.#_fileSize as number;
+  }
+
+  get pageSize(): number {
+    if (this.#_pageSize === undefined) {
+      throw new Error("Page size not properly discoverd");
+    }
+
+    return this.#_pageSize as number;
   }
 
   async close() {
-    for (const fileId of this.mapIdToFile.keys()) {
-      this.jClose(fileId);
+    for (const pFile of this.mapIdToFile.keys()) {
+      this.jClose(pFile);
     }
   }
 
@@ -47,71 +79,83 @@ export class HttpRangeVFS extends FacadeVFS {
     pOutFlags: DataView,
   ): Promise<number> {
     // Check does remote sqlite DB exists
-    const url = new URL(this.baseUrl);
-    const response = await fetch(url, { method: "HEAD" });
 
-    if (!response.ok) {
-      console.log("failed");
-      return VFS.SQLITE_CANTOPEN;
+    const url = new URL(this.#dbConfig.url);
+
+    this.mapIdToFile.set(pFile, url);
+
+    if (this.#dbConfig.serverMode === "full") {
+      this.#dbConfig as FullDbConfig;
+
+      console.log(url);
+      // console.log(_pFile)
+
+      const response = await fetch(url, { method: "HEAD" });
+
+      if (!response.ok) {
+        console.log("failed");
+        return VFS.SQLITE_CANTOPEN;
+      }
+      const contentLength = response.headers.get("content-length");
+      const remoteFileSize = contentLength ? parseInt(contentLength, 10) : 0;
+
+      // console.log(size);
+
+      const headerSize = Math.min(remoteFileSize, 100);
+      const response2 = await fetch(this.#dbConfig.url, {
+        headers: {
+          Range: `bytes=0-${headerSize - 1}`,
+        },
+      });
+
+      const headerBuf = await response2.arrayBuffer();
+      const bytes = new Uint8Array(headerBuf);
+      // SQLITE store page size at byte 16-17
+      const rawPageSize = (bytes[16] << 8) | bytes[17];
+      this.#_pageSize = rawPageSize;
+
+      // SQLITE store page count at byte 28-31
+      const totalPages =
+        (bytes[28] << 24) | (bytes[29] << 16) | (bytes[30] << 8) | bytes[31];
+
+      if (totalPages === 0) {
+        console.warn(
+          "in-header database size is 0, this db is likely a pre-3.7.0 SQLite" +
+            " DB, consider populating headers with a newer version of SQLite",
+        );
+        this.#_fileSize = remoteFileSize;
+      } else if (rawPageSize * totalPages !== remoteFileSize) {
+        console.warn(
+          "Page count * page size not matching remote content-length, consider" +
+            " checking DB integrity, using remote content-length as filesize",
+        );
+        this.#_fileSize = remoteFileSize;
+      } else {
+        this.#_fileSize = rawPageSize * totalPages;
+      }
     }
 
-    const pathname = url.pathname;
-
-    // console.log(response.headers);
-
-    const contentLength = response.headers.get("content-length");
-    const size = contentLength ? parseInt(contentLength, 10) : 0;
-    this.fileSizes.set(pathname, size);
-
-    // if (!isCreating && fileSize >= 100) {
-    //   try {
-    //     // Read the 100-byte database file header
-    //     // (For remote VFS, this is an HTTP Range request for bytes 0-99)
-    //     const headerBuf = new Uint8Array(100);
-    //     await this.readBytes(filename, headerBuf, 0, 0);
-
-    //     // Page size is stored as a 16-bit big-endian integer at offset 16-17
-    //     const rawPageSize = (headerBuf[16] << 8) | headerBuf[17];
-
-    //     // SQLite special case: 1 represents 65536 bytes
-    //     fileHandle.pageSize = rawPageSize === 1 ? 65536 : (rawPageSize || 4096);
-
-    //   } catch (err) {
-    //     console.warn("Failed to read database header in jOpen, falling back to default page size:", err);
-    //   }
-    // }
-
-    this.mapIdToFile.set(pFile, {
-      url,
-      chunkSize: 4096,
-      size: size,
-      cache: new Map(),
-    });
-
-    // this.mapIdToFile.set(fileId, file);
     pOutFlags.setInt32(0, flags | VFS.SQLITE_OPEN_READONLY, true);
-
     return VFS.SQLITE_OK;
   }
 
-  async jClose(fileId: number): Promise<number> {
-    this.mapIdToFile.delete(fileId);
+  async jClose(pFile: number): Promise<number> {
+    this.mapIdToFile.delete(pFile);
     return VFS.SQLITE_OK;
   }
 
   async jRead(
-    pFile: number,
+    _pFile: number,
     pData: Uint8Array,
     iOffset: number,
   ): Promise<number> {
     // console.log(pFile);
     // console.log(this.mapIdToFile);
 
-    const file = this.mapIdToFile.get(pFile);
+    console.log(this.#blockProvider);
 
-    // console.log(file);
-
-    const fileSize = file.size;
+    const fileSize = this.fileSize;
+    const { url } = this.#dbConfig;
 
     // console.log(iOffset);
     // console.log(pData);
@@ -126,7 +170,7 @@ export class HttpRangeVFS extends FacadeVFS {
     // const readEnd = iOffset + availableBytes;
 
     try {
-      const response = await fetch(file.url, {
+      const response = await fetch(url, {
         headers: {
           Range: `bytes=${iOffset}-${endOffset}`,
         },
@@ -137,15 +181,7 @@ export class HttpRangeVFS extends FacadeVFS {
       }
 
       const buffer = await response.arrayBuffer();
-
-      // console.log(buffer)
-
       const bytes = new Uint8Array(buffer, 0, availableBytes);
-
-      // console.log(bytes)
-
-      // Copy fetched bytes directly into Wasm memory view
-      // this.module.HEAP8.set(bytes, pData);
       pData.set(bytes);
       // if (bytes.length < 1024) {
       //   // Zero-fill the remainder if a short read occurs
@@ -160,10 +196,10 @@ export class HttpRangeVFS extends FacadeVFS {
     }
   }
 
-  async jFileSize(fileId: number, pSize64: DataView): Promise<number> {
-    const file = this.mapIdToFile.get(fileId);
+  async jFileSize(_fileId: number, pSize64: DataView): Promise<number> {
+    const fileSize = this.fileSize;
+    pSize64.setBigInt64(0, BigInt(fileSize), true);
 
-    pSize64.setBigInt64(0, BigInt(file.size), true);
     return VFS.SQLITE_OK;
   }
 

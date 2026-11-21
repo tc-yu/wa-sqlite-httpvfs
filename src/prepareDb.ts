@@ -160,7 +160,7 @@ export async function runCli(argv: string[]): Promise<void> {
 
   checkAndOptimizeDatabase(inputPath, pageSize, values.optimize_db);
 
-  const suffixLength = 3
+  const suffixLength = 3;
   const outDir = values.out_dir ? resolve(values.out_dir) : dirname(inputPath);
   const baseName = basename(inputPath);
   const totalChunks = Math.ceil(fileInfo.size / chunkSize);
