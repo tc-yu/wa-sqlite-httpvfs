@@ -2,6 +2,10 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   server: {
+    forwardConsole: {
+      unhandledErrors: true,
+      logLevels: ["warn", "error"],
+    },
     proxy: {
       // string shorthand:
       // http://localhost:5173/foo

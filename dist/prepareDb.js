@@ -148,10 +148,11 @@ async function runCli(argv) {
 	}
 	const chunkSize = inputChunkSize;
 	checkAndOptimizeDatabase(inputPath, pageSize, values.optimize_db);
+	const suffixLength = 3;
 	const outDir = values.out_dir ? resolve(values.out_dir) : dirname(inputPath);
 	const baseName = basename(inputPath);
 	const totalChunks = Math.ceil(fileInfo.size / chunkSize);
-	const padWidth = Math.max(3, String(totalChunks).length);
+	const padWidth = Math.max(suffixLength, String(totalChunks).length);
 	await rm(outDir, { recursive: true });
 	await mkdir(outDir, { recursive: true });
 	let written = 0;
@@ -163,25 +164,20 @@ async function runCli(argv) {
 			finalHash = value;
 			break;
 		}
-		const chunk = value;
-		const suffix = String(chunk.index).padStart(padWidth, "0");
+		const { index, data } = value;
+		const suffix = String(index).padStart(padWidth, "0");
 		const chunkPath = join(outDir, `${baseName}.${suffix}`);
-		await writeFile(chunkPath, chunk.data);
+		await writeFile(chunkPath, data);
 		written++;
 	}
-	console.log(`Final File SHA-256: ${finalHash}`);
-	const now = /* @__PURE__ */ new Date();
-	const pad = (n) => String(n).padStart(2, "0");
-	const stamp = now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + pad(now.getUTCSeconds());
 	const metaJson = {
 		databaseLengthBytes: fileInfo.size,
 		databaseSha256: finalHash,
 		requestChunkSize: pageSize,
 		serverChunkSize: chunkSize,
 		serverMode: "chunked",
-		suffixLength: 3,
-		urlPrefix: `${stamp}${finalHash.slice(0, 8)}/${baseName}.`,
-		version: `${stamp}${finalHash.slice(0, 8)}`
+		suffixLength,
+		urlPrefix: `${finalHash.slice(0, 8)}/${baseName}.`
 	};
 	await writeFile(join(outDir, "meta.json"), JSON.stringify(metaJson, null, 2));
 	console.log(`Created ${written} chunks (${chunkSize} bytes max) in ${outDir}`);

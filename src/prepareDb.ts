@@ -160,10 +160,11 @@ export async function runCli(argv: string[]): Promise<void> {
 
   checkAndOptimizeDatabase(inputPath, pageSize, values.optimize_db);
 
+  const suffixLength = 3
   const outDir = values.out_dir ? resolve(values.out_dir) : dirname(inputPath);
   const baseName = basename(inputPath);
   const totalChunks = Math.ceil(fileInfo.size / chunkSize);
-  const padWidth = Math.max(3, String(totalChunks).length);
+  const padWidth = Math.max(suffixLength, String(totalChunks).length);
 
   await rm(outDir, { recursive: true });
   await mkdir(outDir, { recursive: true });
@@ -182,27 +183,16 @@ export async function runCli(argv: string[]): Promise<void> {
     }
 
     // Process the FileChunk
-    const chunk = value as FileChunk;
+    const { index, data } = value as FileChunk;
     // console.log(`Chunk ${chunk.index}: ${chunk.data.length} bytes`);
 
-    const suffix = String(chunk.index).padStart(padWidth, "0");
+    const suffix = String(index).padStart(padWidth, "0");
     const chunkPath = join(outDir, `${baseName}.${suffix}`);
-    await writeFile(chunkPath, chunk.data);
+    await writeFile(chunkPath, data);
     written++;
   }
 
-  console.log(`Final File SHA-256: ${finalHash}`);
-
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-
-  const stamp =
-    now.getUTCFullYear() +
-    pad(now.getUTCMonth() + 1) + // Months are 0-indexed in JS
-    pad(now.getUTCDate()) +
-    pad(now.getUTCHours()) +
-    pad(now.getUTCMinutes()) +
-    pad(now.getUTCSeconds());
+  // console.log(`Final File SHA-256: ${finalHash}`);
 
   const metaJson = {
     databaseLengthBytes: fileInfo.size,
@@ -210,9 +200,8 @@ export async function runCli(argv: string[]): Promise<void> {
     requestChunkSize: pageSize,
     serverChunkSize: chunkSize,
     serverMode: "chunked",
-    suffixLength: 3,
-    urlPrefix: `${stamp}${finalHash.slice(0, 8)}/${baseName}.`,
-    version: `${stamp}${finalHash.slice(0, 8)}`,
+    suffixLength: suffixLength,
+    urlPrefix: `${finalHash.slice(0, 8)}/${baseName}.`,
   };
 
   await writeFile(join(outDir, "meta.json"), JSON.stringify(metaJson, null, 2));

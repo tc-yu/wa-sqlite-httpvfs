@@ -20,7 +20,7 @@ importers:
         specifier: ^8.3.5
         version: 8.3.5(@types/node@24.19.2)
       wa-sqlite:
-        specifier: github:rhashimoto/wa-sqlite#v1.2.0
+        specifier: github:rhashimoto/wa-sqlite#4631745762f5e24d226254158e5ceada2d5fbe1e
         version: https://codeload.github.com/rhashimoto/wa-sqlite/tar.gz/4631745762f5e24d226254158e5ceada2d5fbe1e
 
 packages:

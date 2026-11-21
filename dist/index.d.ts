@@ -1,1 +1,1 @@
-export { HttpRangeVFS } from "./HttpRangeVFS.js";
+export { HttpRangeVFS } from "./HttpRangeVFS.ts";
