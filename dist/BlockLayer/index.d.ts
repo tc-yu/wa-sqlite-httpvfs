@@ -3,8 +3,6 @@
  * query or fetch from cache
  */
 export interface BlockProvider {
-    getBlock(index: number): Promise<Uint8Array>;
-}
-export declare class SimpleBlockProvider implements BlockProvider {
+    openDb(): Promise<void>;
     getBlock(index: number): Promise<Uint8Array>;
 }

@@ -1,32 +1,27 @@
 import { FacadeVFS as e } from "wa-sqlite/src/FacadeVFS.js";
 import * as t from "wa-sqlite/src/VFS.js";
-// src/BlockLayer/index.ts
-var n = class {
-	async getBlock(e) {
-		return console.log(e), /* @__PURE__ */ new Uint8Array();
-	}
-}, r = class r extends e {
+// src/HttpRangeVFS.ts
+/*!
+* Copyright (c) 2026 T.C YU
+* Licensed under the BSD-3-Clause License.
+*
+* Modified from example VFS code from wa-sqlite:
+* Copyright (c) 2024 Roy T. Hashimoto
+* Licensed under the MIT License.
+*
+* SPDX-License-Identifier: BSD-3-Clause AND MIT
+*/
+var n = class n extends e {
 	mapIdToFile = /* @__PURE__ */ new Map();
-	static async create(e, t, n) {
-		/*!
-		* Copyright (c) 2026 T.C YU
-		* Licensed under the BSD-3-Clause License.
-		*
-		* Modified from example VFS code from wa-sqlite:
-		* Copyright (c) 2024 Roy T. Hashimoto
-		* Licensed under the MIT License.
-		*
-		* SPDX-License-Identifier: BSD-3-Clause AND MIT
-		*/
-		let i = new r(e, t, n);
+	static async create(e, t, r) {
+		let i = new n(e, t, r);
 		return await i.isReady(), i;
 	}
 	#e;
 	#t;
 	#n;
-	#r;
-	constructor(e, t, r) {
-		super(e, t), this.#n = new n(), this.#r = r;
+	constructor(e, t, n) {
+		super(e, t), this.#n = n;
 	}
 	get fileSize() {
 		if (this.#e === void 0) throw Error("File size not properly discoverd");
@@ -40,12 +35,12 @@ var n = class {
 		for (let e of this.mapIdToFile.keys()) this.jClose(e);
 	}
 	async jOpen(e, n, r, i) {
-		let a = new URL(this.#r.url);
-		if (this.mapIdToFile.set(n, a), this.#r.serverMode === "full") {
-			this.#r, console.log(a);
+		let a = new URL(this.#n.url);
+		if (this.mapIdToFile.set(n, a), this.#n.serverMode === "full") {
+			this.#n, console.log(a);
 			let e = await fetch(a, { method: "HEAD" });
 			if (!e.ok) return console.log("failed"), t.SQLITE_CANTOPEN;
-			let n = e.headers.get("content-length"), r = n ? parseInt(n, 10) : 0, i = Math.min(r, 100), o = await (await fetch(this.#r.url, { headers: { Range: `bytes=0-${i - 1}` } })).arrayBuffer(), s = new Uint8Array(o), c = s[16] << 8 | s[17];
+			let n = e.headers.get("content-length"), r = n ? parseInt(n, 10) : 0, i = Math.min(r, 100), o = await (await fetch(this.#n.url, { headers: { Range: `bytes=0-${i - 1}` } })).arrayBuffer(), s = new Uint8Array(o), c = s[16] << 8 | s[17];
 			this.#t = c;
 			let l = s[28] << 24 | s[29] << 16 | s[30] << 8 | s[31];
 			l === 0 ? (console.warn("in-header database size is 0, this db is likely a pre-3.7.0 SQLite DB, consider populating headers with a newer version of SQLite"), this.#e = r) : c * l === r ? this.#e = c * l : (console.warn("Page count * page size not matching remote content-length, consider checking DB integrity, using remote content-length as filesize"), this.#e = r);
@@ -53,11 +48,10 @@ var n = class {
 		return i.setInt32(0, r | t.SQLITE_OPEN_READONLY, !0), t.SQLITE_OK;
 	}
 	async jClose(e) {
-		return this.mapIdToFile.delete(e), t.SQLITE_OK;
+		return t.SQLITE_OK;
 	}
 	async jRead(e, n, r) {
-		console.log(this.#n);
-		let i = this.fileSize, { url: a } = this.#r;
+		let i = this.fileSize, { url: a } = this.#n;
 		if (r >= i) return t.SQLITE_IOERR_SHORT_READ;
 		let o = Math.min(n.byteLength, i - r), s = r + o - 1;
 		try {
@@ -77,4 +71,4 @@ var n = class {
 		return (e.endsWith("-journal") || e.endsWith("-wal") || n === t.SQLITE_ACCESS_READWRITE) && r.setInt32(0, 0, !0), t.SQLITE_OK;
 	}
 };
-export { r as HttpRangeVFS };
+export { n as HttpRangeVFS };

@@ -30,7 +30,7 @@ export declare class HttpRangeVFS extends FacadeVFS {
     get pageSize(): number;
     close(): Promise<void>;
     jOpen(_filename: string | null, pFile: number, flags: number, pOutFlags: DataView): Promise<number>;
-    jClose(pFile: number): Promise<number>;
+    jClose(_pFile: number): Promise<number>;
     jRead(_pFile: number, pData: Uint8Array, iOffset: number): Promise<number>;
     jFileSize(_fileId: number, pSize64: DataView): Promise<number>;
     jAccess(name: string, flags: number, pResOut: DataView): Promise<number>;

@@ -11,7 +11,7 @@
 import { FacadeVFS } from "wa-sqlite/src/FacadeVFS.js";
 import * as VFS from "wa-sqlite/src/VFS.js";
 
-import { SimpleBlockProvider } from "./BlockLayer";
+// import { SimpleBlockProvider } from "./BlockLayer";
 
 export interface ChunkedDbConfig {
   serverChunkSize: number;
@@ -40,13 +40,12 @@ export class HttpRangeVFS extends FacadeVFS {
 
   #_fileSize?: number;
   #_pageSize?: number;
-  #blockProvider: SimpleBlockProvider;
+  // #blockProvider: SimpleBlockProvider;
   #dbConfig: DbConfig;
 
   constructor(name: string, module: object, dbConfig: DbConfig) {
     super(name, module);
-    // if present
-    this.#blockProvider = new SimpleBlockProvider();
+    // this.#blockProvider = new SimpleBlockProvider(dbConfig);
     this.#dbConfig = dbConfig;
   }
 
@@ -81,7 +80,6 @@ export class HttpRangeVFS extends FacadeVFS {
     // Check does remote sqlite DB exists
 
     const url = new URL(this.#dbConfig.url);
-
     this.mapIdToFile.set(pFile, url);
 
     if (this.#dbConfig.serverMode === "full") {
@@ -139,8 +137,8 @@ export class HttpRangeVFS extends FacadeVFS {
     return VFS.SQLITE_OK;
   }
 
-  async jClose(pFile: number): Promise<number> {
-    this.mapIdToFile.delete(pFile);
+  async jClose(_pFile: number): Promise<number> {
+    // this.mapIdToFile.delete(pFile);
     return VFS.SQLITE_OK;
   }
 
@@ -152,7 +150,7 @@ export class HttpRangeVFS extends FacadeVFS {
     // console.log(pFile);
     // console.log(this.mapIdToFile);
 
-    console.log(this.#blockProvider);
+    // console.log(this.#blockProvider);
 
     const fileSize = this.fileSize;
     const { url } = this.#dbConfig;

@@ -24,7 +24,7 @@ const ready = init();
 
 self.onmessage = async (event) => {
   await ready;
-  const {id, payload} = event.data;
+  const { id, payload } = event.data;
   const result: (string | null)[] = [];
 
   console.log(payload);
@@ -33,6 +33,16 @@ self.onmessage = async (event) => {
     result.push(row[0] as string | null);
   });
 
-  self.postMessage({id, result});
+  self.postMessage({ id, result });
 };
 
+// TODO: handle db close logic
+// if (event.data.type === 'SHUTDOWN') {
+//     clearInterval(timer);
+//     socket.close();
+//     self.postMessage({ type: 'CLOSED' });
+//     self.close(); // Terminates the worker from the inside
+//     return;
+//   }
+
+// worker.postMessage({ type: 'SHUTDOWN' });
