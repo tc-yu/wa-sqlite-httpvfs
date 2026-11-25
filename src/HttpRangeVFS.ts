@@ -1,5 +1,3 @@
-/// <reference path="./wa-sqlite.d.ts" />
-
 /*!
  * Copyright (c) 2026 T.C YU
  * Licensed under the BSD-3-Clause License.

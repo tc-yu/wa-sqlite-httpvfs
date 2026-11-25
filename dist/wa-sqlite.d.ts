@@ -1,5 +1,3 @@
-// import * as SQLite from "wa-sqlite";
-
 declare module "wa-sqlite/src/FacadeVFS.js" {
   export interface FacadeVFS extends SQLiteVFS {}
   export class FacadeVFS {
