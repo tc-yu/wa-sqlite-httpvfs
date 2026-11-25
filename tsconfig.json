@@ -21,8 +21,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
 
-    "allowJs": true,
-    "maxNodeModuleJsDepth": 2
+
   },
   "include": ["src"]
 }

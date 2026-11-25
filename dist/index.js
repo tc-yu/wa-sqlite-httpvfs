@@ -1,74 +1,723 @@
-import { FacadeVFS as e } from "wa-sqlite/src/FacadeVFS.js";
-import * as t from "wa-sqlite/src/VFS.js";
-// src/HttpRangeVFS.ts
-/*!
-* Copyright (c) 2026 T.C YU
-* Licensed under the BSD-3-Clause License.
-*
-* Modified from example VFS code from wa-sqlite:
-* Copyright (c) 2024 Roy T. Hashimoto
-* Licensed under the MIT License.
-*
-* SPDX-License-Identifier: BSD-3-Clause AND MIT
-*/
-var n = class n extends e {
-	mapIdToFile = /* @__PURE__ */ new Map();
-	static async create(e, t, r) {
-		let i = new n(e, t, r);
-		return await i.isReady(), i;
+import { t as e } from "./HttpHelper-D1W7SV9P.js";
+import { FacadeVFS as t } from "wa-sqlite/src/FacadeVFS.js";
+import * as n from "wa-sqlite";
+// node_modules/.pnpm/lru-cache@11.5.3/node_modules/lru-cache/dist/esm/browser/index.min.js
+var r = { hasSubscribers: !1 }, i = r, a = r, o = typeof performance == "object" && performance && typeof performance.now == "function" ? performance : Date, s = () => i.hasSubscribers || a.hasSubscribers, c = /* @__PURE__ */ new Set(), l = typeof process == "object" && process ? process : {}, u = (e, t, n, r) => {
+	typeof l.emitWarning == "function" ? l.emitWarning(e, t, n, r) : console.error(`[${n}] ${t}: ${e}`);
+}, d = (e) => !c.has(e), f = (e) => !!e && e === Math.floor(e) && e > 0 && isFinite(e), p = (e) => f(e) ? e <= 256 ? Uint8Array : e <= 2 ** 16 ? Uint16Array : e <= 2 ** 32 ? Uint32Array : e <= 2 ** 53 - 1 ? m : null : null, m = class extends Array {
+	constructor(e) {
+		super(e), this.fill(0);
 	}
+}, h = class e {
+	heap;
+	length;
+	static #e = !1;
+	static create(t) {
+		let n = p(t);
+		if (!n) return [];
+		e.#e = !0;
+		let r = new e(t, n);
+		return e.#e = !1, r;
+	}
+	constructor(t, n) {
+		if (!e.#e) throw TypeError("instantiate Stack using Stack.create(n)");
+		this.heap = new n(t), this.length = 0;
+	}
+	push(e) {
+		this.heap[this.length++] = e;
+	}
+	pop() {
+		return this.heap[--this.length];
+	}
+}, g = class e {
 	#e;
 	#t;
 	#n;
-	constructor(e, t, n) {
-		super(e, t), this.#n = n;
+	#r;
+	#i;
+	#a;
+	#o;
+	#s;
+	get perf() {
+		return this.#s;
 	}
-	get fileSize() {
-		if (this.#e === void 0) throw Error("File size not properly discoverd");
+	ttl;
+	ttlResolution;
+	ttlAutopurge;
+	updateAgeOnGet;
+	updateAgeOnHas;
+	allowStale;
+	noDisposeOnSet;
+	noUpdateTTL;
+	maxEntrySize;
+	sizeCalculation;
+	noDeleteOnFetchRejection;
+	noDeleteOnStaleGet;
+	allowStaleOnFetchAbort;
+	allowStaleOnFetchRejection;
+	ignoreFetchAbort;
+	backgroundFetchSize;
+	#c;
+	#l;
+	#u;
+	#d;
+	#f;
+	#p;
+	#m;
+	#h;
+	#g;
+	#_;
+	#v;
+	#y;
+	#b;
+	#x;
+	#S;
+	#C;
+	#w;
+	#T;
+	#E;
+	static unsafeExposeInternals(e) {
+		return {
+			starts: e.#b,
+			ttls: e.#x,
+			autopurgeTimers: e.#S,
+			sizes: e.#y,
+			keyMap: e.#u,
+			keyList: e.#d,
+			valList: e.#f,
+			next: e.#p,
+			prev: e.#m,
+			get head() {
+				return e.#h;
+			},
+			get tail() {
+				return e.#g;
+			},
+			free: e.#_,
+			isBackgroundFetch: (t) => e.#W(t),
+			backgroundFetch: (t, n, r, i) => e.#U(t, n, r, i),
+			moveToTail: (t) => e.#X(t),
+			indexes: (t) => e.#I(t),
+			rindexes: (t) => e.#L(t),
+			isStale: (t) => e.#j(t)
+		};
+	}
+	get max() {
 		return this.#e;
 	}
-	get pageSize() {
-		if (this.#t === void 0) throw Error("Page size not properly discoverd");
+	get maxSize() {
 		return this.#t;
+	}
+	get calculatedSize() {
+		return this.#l;
+	}
+	get size() {
+		return this.#c;
+	}
+	get fetchMethod() {
+		return this.#a;
+	}
+	get memoMethod() {
+		return this.#o;
+	}
+	get dispose() {
+		return this.#n;
+	}
+	get onInsert() {
+		return this.#r;
+	}
+	get disposeAfter() {
+		return this.#i;
+	}
+	constructor(t) {
+		let { max: n = 0, ttl: r, ttlResolution: i = 1, ttlAutopurge: a, updateAgeOnGet: s, updateAgeOnHas: l, allowStale: m, dispose: g, onInsert: _, disposeAfter: v, noDisposeOnSet: y, noUpdateTTL: b, maxSize: x = 0, maxEntrySize: S = 0, sizeCalculation: C, fetchMethod: w, memoMethod: T, noDeleteOnFetchRejection: E, noDeleteOnStaleGet: D, allowStaleOnFetchRejection: O, allowStaleOnFetchAbort: k, ignoreFetchAbort: A, backgroundFetchSize: j = 1, perf: M } = t;
+		if (this.backgroundFetchSize = j, M !== void 0 && typeof M?.now != "function") throw TypeError("perf option must have a now() method if specified");
+		if (this.#s = M ?? o, n !== 0 && !f(n)) throw TypeError("max option must be a nonnegative integer");
+		let N = n ? p(n) : Array;
+		if (!N) throw Error("invalid max value: " + n);
+		if (this.#e = n, this.#t = x, this.maxEntrySize = S || this.#t, this.sizeCalculation = C, this.sizeCalculation) {
+			if (!this.#t && !this.maxEntrySize) throw TypeError("cannot set sizeCalculation without setting maxSize or maxEntrySize");
+			if (typeof this.sizeCalculation != "function") throw TypeError("sizeCalculation set to non-function");
+		}
+		if (T !== void 0 && typeof T != "function") throw TypeError("memoMethod must be a function if defined");
+		if (this.#o = T, w !== void 0 && typeof w != "function") throw TypeError("fetchMethod must be a function if specified");
+		if (this.#a = w, this.#w = !!w, this.#u = /* @__PURE__ */ new Map(), this.#d = Array.from({ length: n }).fill(void 0), this.#f = Array.from({ length: n }).fill(void 0), this.#p = new N(n), this.#m = new N(n), this.#h = 0, this.#g = 0, this.#_ = h.create(n), this.#c = 0, this.#l = 0, typeof g == "function" && (this.#n = g), typeof _ == "function" && (this.#r = _), typeof v == "function" ? (this.#i = v, this.#v = []) : (this.#i = void 0, this.#v = void 0), this.#C = !!this.#n, this.#E = !!this.#r, this.#T = !!this.#i, this.noDisposeOnSet = !!y, this.noUpdateTTL = !!b, this.noDeleteOnFetchRejection = !!E, this.allowStaleOnFetchRejection = !!O, this.allowStaleOnFetchAbort = !!k, this.ignoreFetchAbort = !!A, this.maxEntrySize !== 0) {
+			if (this.#t !== 0 && !f(this.#t)) throw TypeError("maxSize must be a positive integer if specified");
+			if (!f(this.maxEntrySize)) throw TypeError("maxEntrySize must be a positive integer if specified");
+			this.#M();
+		}
+		if (this.allowStale = !!m, this.noDeleteOnStaleGet = !!D, this.updateAgeOnGet = !!s, this.updateAgeOnHas = !!l, this.ttlResolution = f(i) || i === 0 ? i : 1, this.ttlAutopurge = !!a, this.ttl = r || 0, this.ttl) {
+			if (!f(this.ttl)) throw TypeError("ttl must be a positive integer if specified");
+			this.#D();
+		}
+		if (this.#e === 0 && this.ttl === 0 && this.#t === 0) throw TypeError("At least one of max, maxSize, or ttl is required");
+		if (!this.ttlAutopurge && !this.#e && !this.#t) {
+			let t = "LRU_CACHE_UNBOUNDED";
+			d(t) && (c.add(t), u("TTL caching without ttlAutopurge, max, or maxSize can result in unbounded memory consumption.", "UnboundedCacheWarning", t, e));
+		}
+	}
+	getRemainingTTL(e) {
+		return this.#u.has(e) ? 1 / 0 : 0;
+	}
+	#D() {
+		let e = new m(this.#e), t = new m(this.#e);
+		this.#x = e, this.#b = t;
+		let n = this.ttlAutopurge ? Array.from({ length: this.#e }) : void 0;
+		this.#S = n, this.#A = (n, i, a = this.#s.now()) => {
+			t[n] = i === 0 ? 0 : a, e[n] = i, r(n, i);
+		}, this.#O = (n) => {
+			t[n] = e[n] === 0 ? 0 : this.#s.now(), r(n, e[n]);
+		};
+		let r = this.ttlAutopurge ? (e, t) => {
+			if (n?.[e] && (clearTimeout(n[e]), n[e] = void 0), t && t !== 0 && n) {
+				let i = setTimeout(() => {
+					this.#j(e) ? (this.#Z(this.#d[e], "expire"), n[e] = void 0) : r(e, o(e));
+				}, t + 1);
+				i.unref && i.unref(), n[e] = i;
+			}
+		} : () => {};
+		this.#k = (n, r) => {
+			if (e[r]) {
+				let o = e[r], s = t[r];
+				if (!o || !s) return;
+				n.ttl = o, n.start = s, n.now = i || a(), n.remainingTTL = o - (n.now - s);
+			}
+		};
+		let i = 0, a = () => {
+			let e = this.#s.now();
+			if (this.ttlResolution > 0) {
+				i = e;
+				let t = setTimeout(() => i = 0, this.ttlResolution);
+				t.unref && t.unref();
+			}
+			return e;
+		};
+		this.getRemainingTTL = (e) => {
+			let t = this.#u.get(e);
+			return t === void 0 ? 0 : o(t);
+		};
+		let o = (n) => {
+			let r = e[n], o = t[n];
+			return !r || !o ? 1 / 0 : r - ((i || a()) - o);
+		};
+		this.#j = (n) => {
+			let r = t[n], o = e[n];
+			return !!o && !!r && (i || a()) - r > o;
+		};
+	}
+	#O = () => {};
+	#k = () => {};
+	#A = () => {};
+	#j = () => !1;
+	#M() {
+		let e = new m(this.#e);
+		this.#l = 0, this.#y = e, this.#N = (t) => {
+			this.#l -= e[t], e[t] = 0;
+		}, this.#F = (e, t, n, r) => {
+			if (!f(n)) {
+				if (this.#W(t)) return this.backgroundFetchSize;
+				if (r) {
+					if (typeof r != "function") throw TypeError("sizeCalculation must be a function");
+					if (n = r(t, e), !f(n)) throw TypeError("sizeCalculation return invalid (expect positive integer)");
+				} else throw TypeError("invalid size value (must be positive integer). When maxSize or maxEntrySize is used, sizeCalculation or size must be set.");
+			}
+			return n;
+		}, this.#P = (t, n, r) => {
+			if (e[t] = n, this.#t) {
+				let n = this.#t - e[t];
+				for (; this.#l > n;) this.#B(!0);
+			}
+			this.#l += e[t], r && (r.entrySize = n, r.totalCalculatedSize = this.#l);
+		};
+	}
+	#N = (e) => {};
+	#P = (e, t, n) => {};
+	#F = (e, t, n, r) => {
+		if (n || r) throw TypeError("cannot set size without setting maxSize or maxEntrySize on cache");
+		return 0;
+	};
+	*#I({ allowStale: e = this.allowStale } = {}) {
+		if (this.#c) for (let t = this.#g; this.#R(t) && ((e || !this.#j(t)) && (yield t), t !== this.#h);) t = this.#m[t];
+	}
+	*#L({ allowStale: e = this.allowStale } = {}) {
+		if (this.#c) for (let t = this.#h; this.#R(t) && ((e || !this.#j(t)) && (yield t), t !== this.#g);) t = this.#p[t];
+	}
+	#R(e) {
+		return e !== void 0 && this.#u.get(this.#d[e]) === e;
+	}
+	*entries() {
+		for (let e of this.#I()) this.#f[e] !== void 0 && this.#d[e] !== void 0 && !this.#W(this.#f[e]) && (yield [this.#d[e], this.#f[e]]);
+	}
+	*rentries() {
+		for (let e of this.#L()) this.#f[e] !== void 0 && this.#d[e] !== void 0 && !this.#W(this.#f[e]) && (yield [this.#d[e], this.#f[e]]);
+	}
+	*keys() {
+		for (let e of this.#I()) {
+			let t = this.#d[e];
+			t !== void 0 && !this.#W(this.#f[e]) && (yield t);
+		}
+	}
+	*rkeys() {
+		for (let e of this.#L()) {
+			let t = this.#d[e];
+			t !== void 0 && !this.#W(this.#f[e]) && (yield t);
+		}
+	}
+	*values() {
+		for (let e of this.#I()) this.#f[e] !== void 0 && !this.#W(this.#f[e]) && (yield this.#f[e]);
+	}
+	*rvalues() {
+		for (let e of this.#L()) this.#f[e] !== void 0 && !this.#W(this.#f[e]) && (yield this.#f[e]);
+	}
+	[Symbol.iterator]() {
+		return this.entries();
+	}
+	[Symbol.toStringTag] = "LRUCache";
+	find(e, t = {}) {
+		for (let n of this.#I()) {
+			let r = this.#f[n], i = this.#W(r) ? r.__staleWhileFetching : r;
+			if (i !== void 0 && e(i, this.#d[n], this)) return this.#J(this.#d[n], t);
+		}
+	}
+	forEach(e, t = this) {
+		for (let n of this.#I()) {
+			let r = this.#f[n], i = this.#W(r) ? r.__staleWhileFetching : r;
+			i !== void 0 && e.call(t, i, this.#d[n], this);
+		}
+	}
+	rforEach(e, t = this) {
+		for (let n of this.#L()) {
+			let r = this.#f[n], i = this.#W(r) ? r.__staleWhileFetching : r;
+			i !== void 0 && e.call(t, i, this.#d[n], this);
+		}
+	}
+	purgeStale() {
+		let e = !1;
+		for (let t of this.#L({ allowStale: !0 })) this.#j(t) && (this.#Z(this.#d[t], "expire"), e = !0);
+		return e;
+	}
+	info(e) {
+		let t = this.#u.get(e);
+		if (t === void 0) return;
+		let n = this.#f[t], r = this.#W(n) ? n.__staleWhileFetching : n;
+		if (r === void 0) return;
+		let i = { value: r };
+		if (this.#x && this.#b) {
+			let e = this.#x[t], n = this.#b[t];
+			e && n && (i.ttl = e - (this.#s.now() - n), i.start = Date.now());
+		}
+		return this.#y && (i.size = this.#y[t]), i;
+	}
+	dump() {
+		let e = [];
+		for (let t of this.#I({ allowStale: !0 })) {
+			let n = this.#d[t], r = this.#f[t], i = this.#W(r) ? r.__staleWhileFetching : r;
+			if (i === void 0 || n === void 0) continue;
+			let a = { value: i };
+			if (this.#x && this.#b) {
+				a.ttl = this.#x[t];
+				let e = this.#s.now() - this.#b[t];
+				a.start = Math.floor(Date.now() - e);
+			}
+			this.#y && (a.size = this.#y[t]), e.unshift([n, a]);
+		}
+		return e;
+	}
+	load(e) {
+		this.clear();
+		for (let [t, n] of e) {
+			if (n.start) {
+				let e = Date.now() - n.start;
+				n.start = this.#s.now() - e;
+			}
+			this.#z(t, n.value, n);
+		}
+	}
+	set(e, t, n = {}) {
+		let { status: r = i.hasSubscribers ? {} : void 0 } = n;
+		n.status = r, r && (r.op = "set", r.key = e, t !== void 0 && (r.value = t), r.cache = this);
+		let a = this.#z(e, t, n);
+		return r && i.hasSubscribers && i.publish(r), a;
+	}
+	#z(e, t, n, r) {
+		let { ttl: i = this.ttl, start: a, noDisposeOnSet: o = this.noDisposeOnSet, sizeCalculation: s = this.sizeCalculation, status: c } = n, l = this.#W(t);
+		if (t === void 0) return c && (c.set = "deleted"), this.delete(e), this;
+		let { noUpdateTTL: u = this.noUpdateTTL } = n;
+		c && !l && (c.value = t);
+		let d = this.#F(e, t, n.size || 0, s, c);
+		if (this.maxEntrySize && d > this.maxEntrySize) return this.#Z(e, "set"), c && (c.set = "miss", c.maxEntrySizeExceeded = !0), this;
+		let f = this.#c === 0 ? void 0 : this.#u.get(e);
+		if (f === void 0) f = this.#c === 0 ? this.#g : this.#_.length === 0 ? this.#c === this.#e ? this.#B(!1) : this.#c : this.#_.pop(), this.#d[f] = e, this.#f[f] = t, this.#u.set(e, f), this.#p[this.#g] = f, this.#m[f] = this.#g, this.#g = f, this.#c++, this.#P(f, d, c), c && (c.set = "add"), u = !1, this.#E && !l && this.#r?.(t, e, "add");
+		else {
+			this.#X(f);
+			let n = this.#f[f];
+			if (t !== n) {
+				if (!o) {
+					if (this.#W(n)) {
+						n !== r && n.__abortController.abort(/* @__PURE__ */ Error("replaced"));
+						let { __staleWhileFetching: i } = n;
+						i !== void 0 && i !== t && (this.#C && this.#n?.(i, e, "set"), this.#T && this.#v?.push([
+							i,
+							e,
+							"set"
+						]));
+					} else this.#C && this.#n?.(n, e, "set"), this.#T && this.#v?.push([
+						n,
+						e,
+						"set"
+					]);
+				}
+				if (this.#N(f), this.#P(f, d, c), this.#f[f] = t, !l) {
+					let r = n && this.#W(n) ? n.__staleWhileFetching : n, i = r === void 0 ? "add" : t === r ? "update" : "replace";
+					c && (c.set = i, r !== void 0 && (c.oldValue = r)), this.#E && this.onInsert?.(t, e, i);
+				}
+			} else l || (c && (c.set = "update"), this.#E && this.onInsert?.(t, e, "update"));
+		}
+		if (i !== 0 && !this.#x && this.#D(), this.#x && (u || this.#A(f, i, a), c && this.#k(c, f)), !o && this.#T && this.#v) {
+			let e = this.#v, t;
+			for (; t = e?.shift();) this.#i?.(...t);
+		}
+		return this;
+	}
+	pop() {
+		try {
+			for (; this.#c;) {
+				let e = this.#f[this.#h];
+				if (this.#B(!0), this.#W(e)) {
+					if (e.__staleWhileFetching) return e.__staleWhileFetching;
+				} else if (e !== void 0) return e;
+			}
+		} finally {
+			if (this.#T && this.#v) {
+				let e = this.#v, t;
+				for (; t = e?.shift();) this.#i?.(...t);
+			}
+		}
+	}
+	#B(e) {
+		let t = this.#h, n = this.#d[t], r = this.#f[t], i = this.#W(r);
+		i && r.__abortController.abort(/* @__PURE__ */ Error("evicted"));
+		let a = i ? r.__staleWhileFetching : r;
+		return (this.#C || this.#T) && a !== void 0 && (this.#C && this.#n?.(a, n, "evict"), this.#T && this.#v?.push([
+			a,
+			n,
+			"evict"
+		])), this.#N(t), this.#S?.[t] && (clearTimeout(this.#S[t]), this.#S[t] = void 0), e && (this.#d[t] = void 0, this.#f[t] = void 0, this.#_.push(t)), this.#c === 1 ? (this.#h = this.#g = 0, this.#_.length = 0) : this.#h = this.#p[t], this.#u.delete(n), this.#c--, t;
+	}
+	has(e, t = {}) {
+		let { status: n = i.hasSubscribers ? {} : void 0 } = t;
+		t.status = n, n && (n.op = "has", n.key = e, n.cache = this);
+		let r = this.#V(e, t);
+		return i.hasSubscribers && i.publish(n), r;
+	}
+	#V(e, t = {}) {
+		let { updateAgeOnHas: n = this.updateAgeOnHas, status: r } = t, i = this.#u.get(e);
+		if (i !== void 0) {
+			let e = this.#f[i];
+			if (this.#W(e) && e.__staleWhileFetching === void 0) return !1;
+			if (this.#j(i)) r && (r.has = "stale", this.#k(r, i));
+			else return n && this.#O(i), r && (r.has = "hit", this.#k(r, i)), !0;
+		} else r && (r.has = "miss");
+		return !1;
+	}
+	peek(e, t = {}) {
+		let { status: n = s() ? {} : void 0 } = t;
+		n && (n.op = "peek", n.key = e, n.cache = this), t.status = n;
+		let r = this.#H(e, t);
+		return i.hasSubscribers && i.publish(n), r;
+	}
+	#H(e, t) {
+		let { status: n, allowStale: r = this.allowStale } = t, i = this.#u.get(e);
+		if (i === void 0 || !r && this.#j(i)) {
+			n && (n.peek = i === void 0 ? "miss" : "stale");
+			return;
+		}
+		let a = this.#f[i], o = this.#W(a) ? a.__staleWhileFetching : a;
+		return n && (o === void 0 ? n.peek = "miss" : (n.peek = "hit", n.value = o)), o;
+	}
+	#U(e, t, n, r) {
+		let i = t === void 0 ? void 0 : this.#f[t];
+		if (this.#W(i)) return i;
+		let a = new AbortController(), { signal: o } = n;
+		o?.addEventListener("abort", () => a.abort(o.reason), { signal: a.signal });
+		let s = {
+			signal: a.signal,
+			options: n,
+			context: r
+		}, c = (r, i = !1) => {
+			let { aborted: o } = a.signal, c = n.ignoreFetchAbort && r !== void 0, l = n.ignoreFetchAbort || !!(n.allowStaleOnFetchAbort && r !== void 0);
+			if (n.status && (o && !i ? (n.status.fetchAborted = !0, n.status.fetchError = a.signal.reason, c && (n.status.fetchAbortIgnored = !0)) : n.status.fetchResolved = !0), o && !c && !i) return u(a.signal.reason, l);
+			let d = f, p = this.#f[t];
+			return (p === f || p === void 0 && c && i) && (r === void 0 ? d.__staleWhileFetching === void 0 ? this.#Z(e, "fetch") : this.#f[t] = d.__staleWhileFetching : (n.status && (n.status.fetchUpdated = !0), this.#z(e, r, s.options, d))), r;
+		}, l = (e) => (n.status && (n.status.fetchRejected = !0, n.status.fetchError = e), u(e, !1)), u = (r, i) => {
+			let { aborted: o } = a.signal, s = o && n.allowStaleOnFetchAbort, c = s || n.allowStaleOnFetchRejection, l = c || n.noDeleteOnFetchRejection, u = f;
+			if (this.#f[t] === f && (!l || !i && u.__staleWhileFetching === void 0 ? this.#Z(e, "fetch") : s || (this.#f[t] = u.__staleWhileFetching)), c) return n.status && u.__staleWhileFetching !== void 0 && (n.status.returnedStale = !0), u.__staleWhileFetching;
+			if (u.__returned === u) throw r;
+		}, d = (t, r) => {
+			let o = this.#a?.(e, i, s);
+			a.signal.addEventListener("abort", () => {
+				(!n.ignoreFetchAbort || n.allowStaleOnFetchAbort) && (t(void 0), n.allowStaleOnFetchAbort && (t = (e) => c(e, !0)));
+			}), o && o instanceof Promise ? o.then((e) => t(e === void 0 ? void 0 : e), r) : o !== void 0 && t(o);
+		};
+		n.status && (n.status.fetchDispatched = !0);
+		let f = new Promise(d).then(c, l), p = Object.assign(f, {
+			__abortController: a,
+			__staleWhileFetching: i,
+			__returned: void 0
+		});
+		return t === void 0 ? (this.#z(e, p, {
+			...s.options,
+			status: void 0
+		}), t = this.#u.get(e)) : this.#f[t] = p, p;
+	}
+	#W(e) {
+		if (!this.#w) return !1;
+		let t = e;
+		return !!t && t instanceof Promise && t.hasOwnProperty("__staleWhileFetching") && t.__abortController instanceof AbortController;
+	}
+	fetch(e, t = {}) {
+		let n = a.hasSubscribers, { status: r = s() ? {} : void 0 } = t;
+		t.status = r, r && t.context && (r.context = t.context);
+		let i = this.#G(e, t);
+		return r && n && (r.trace = !0, a.tracePromise(() => i, r).catch(() => {})), i;
+	}
+	async #G(e, t = {}) {
+		let { allowStale: n = this.allowStale, updateAgeOnGet: r = this.updateAgeOnGet, noDeleteOnStaleGet: i = this.noDeleteOnStaleGet, ttl: a = this.ttl, noDisposeOnSet: o = this.noDisposeOnSet, size: s = 0, sizeCalculation: c = this.sizeCalculation, noUpdateTTL: l = this.noUpdateTTL, noDeleteOnFetchRejection: u = this.noDeleteOnFetchRejection, allowStaleOnFetchRejection: d = this.allowStaleOnFetchRejection, ignoreFetchAbort: f = this.ignoreFetchAbort, allowStaleOnFetchAbort: p = this.allowStaleOnFetchAbort, context: m, forceRefresh: h = !1, status: g, signal: _ } = t;
+		if (g && (g.op = "fetch", g.key = e, h && (g.forceRefresh = !0), g.cache = this), !this.#w) return g && (g.fetch = "get"), this.#J(e, {
+			allowStale: n,
+			updateAgeOnGet: r,
+			noDeleteOnStaleGet: i,
+			status: g
+		});
+		let v = {
+			allowStale: n,
+			updateAgeOnGet: r,
+			noDeleteOnStaleGet: i,
+			ttl: a,
+			noDisposeOnSet: o,
+			size: s,
+			sizeCalculation: c,
+			noUpdateTTL: l,
+			noDeleteOnFetchRejection: u,
+			allowStaleOnFetchRejection: d,
+			allowStaleOnFetchAbort: p,
+			ignoreFetchAbort: f,
+			status: g,
+			signal: _
+		}, y = this.#u.get(e);
+		if (y === void 0) {
+			g && (g.fetch = "miss");
+			let t = this.#U(e, y, v, m);
+			return t.__returned = t;
+		}
+		{
+			let t = this.#f[y];
+			if (this.#W(t)) {
+				let e = n && t.__staleWhileFetching !== void 0;
+				return g && (g.fetch = "inflight", e && (g.returnedStale = !0)), e ? t.__staleWhileFetching : t.__returned = t;
+			}
+			let i = this.#j(y);
+			if (!h && !i) return g && (g.fetch = "hit"), this.#X(y), r && this.#O(y), g && this.#k(g, y), t;
+			let a = this.#U(e, y, v, m), o = a.__staleWhileFetching !== void 0 && n;
+			return g && (g.fetch = i ? "stale" : "refresh", o && i && (g.returnedStale = !0)), o ? a.__staleWhileFetching : a.__returned = a;
+		}
+	}
+	forceFetch(e, t = {}) {
+		let n = a.hasSubscribers, { status: r = s() ? {} : void 0 } = t;
+		t.status = r, r && t.context && (r.context = t.context);
+		let i = this.#K(e, t);
+		return r && n && (r.trace = !0, a.tracePromise(() => i, r).catch(() => {})), i;
+	}
+	async #K(e, t = {}) {
+		let n = await this.#G(e, t);
+		if (n === void 0) throw Error("fetch() returned undefined");
+		return n;
+	}
+	memo(e, t = {}) {
+		let { status: n = i.hasSubscribers ? {} : void 0 } = t;
+		t.status = n, n && (n.op = "memo", n.key = e, t.context && (n.context = t.context), n.cache = this);
+		let r = this.#q(e, t);
+		return n && (n.value = r), i.hasSubscribers && i.publish(n), r;
+	}
+	#q(e, t = {}) {
+		let n = this.#o;
+		if (!n) throw Error("no memoMethod provided to constructor");
+		let { context: r, status: i, forceRefresh: a, ...o } = t;
+		i && a && (i.forceRefresh = !0);
+		let s = this.#J(e, o), c = a || s === void 0;
+		if (i && (i.memo = c ? "miss" : "hit", c || (i.value = s)), !c) return s;
+		let l = n(e, s, {
+			options: o,
+			context: r
+		});
+		return i && (i.value = l), this.#z(e, l, o), l;
+	}
+	get(e, t = {}) {
+		let { status: n = i.hasSubscribers ? {} : void 0 } = t;
+		t.status = n, n && (n.op = "get", n.key = e, n.cache = this);
+		let r = this.#J(e, t);
+		return n && (r !== void 0 && (n.value = r), i.hasSubscribers && i.publish(n)), r;
+	}
+	#J(e, t = {}) {
+		let { allowStale: n = this.allowStale, updateAgeOnGet: r = this.updateAgeOnGet, noDeleteOnStaleGet: i = this.noDeleteOnStaleGet, status: a } = t, o = this.#u.get(e);
+		if (o === void 0) {
+			a && (a.get = "miss");
+			return;
+		}
+		let s = this.#f[o], c = this.#W(s);
+		return a && this.#k(a, o), this.#j(o) ? c ? (a && (a.get = "stale-fetching"), n && s.__staleWhileFetching !== void 0 ? (a && (a.returnedStale = !0), s.__staleWhileFetching) : void 0) : (i || this.#Z(e, "expire"), a && (a.get = "stale"), n ? (a && (a.returnedStale = !0), s) : void 0) : (a && (a.get = c ? "fetching" : "hit"), this.#X(o), r && this.#O(o), c ? s.__staleWhileFetching : s);
+	}
+	#Y(e, t) {
+		this.#m[t] = e, this.#p[e] = t;
+	}
+	#X(e) {
+		e !== this.#g && (e === this.#h ? this.#h = this.#p[e] : this.#Y(this.#m[e], this.#p[e]), this.#Y(this.#g, e), this.#g = e);
+	}
+	delete(e) {
+		return this.#Z(e, "delete");
+	}
+	#Z(e, t) {
+		i.hasSubscribers && i.publish({
+			op: "delete",
+			delete: t,
+			key: e,
+			cache: this
+		});
+		let n = !1;
+		if (this.#c !== 0) {
+			let r = this.#u.get(e);
+			if (r !== void 0) {
+				if (this.#S?.[r] && (clearTimeout(this.#S[r]), this.#S[r] = void 0), n = !0, this.#c === 1) this.#Q(t);
+				else {
+					this.#N(r);
+					let n = this.#f[r];
+					if (this.#W(n) ? n.__abortController.abort(/* @__PURE__ */ Error("deleted")) : (this.#C || this.#T) && (this.#C && this.#n?.(n, e, t), this.#T && this.#v?.push([
+						n,
+						e,
+						t
+					])), this.#u.delete(e), this.#d[r] = void 0, this.#f[r] = void 0, r === this.#g) this.#g = this.#m[r];
+					else if (r === this.#h) this.#h = this.#p[r];
+					else {
+						let e = this.#m[r];
+						this.#p[e] = this.#p[r];
+						let t = this.#p[r];
+						this.#m[t] = this.#m[r];
+					}
+					this.#c--, this.#_.push(r);
+				}
+			}
+		}
+		if (this.#T && this.#v?.length) {
+			let e = this.#v, t;
+			for (; t = e?.shift();) this.#i?.(...t);
+		}
+		return n;
+	}
+	clear() {
+		return this.#Q("delete");
+	}
+	#Q(e) {
+		for (let t of this.#L({ allowStale: !0 })) {
+			let n = this.#f[t];
+			if (this.#W(n)) n.__abortController.abort(/* @__PURE__ */ Error("deleted"));
+			else {
+				let r = this.#d[t];
+				this.#C && this.#n?.(n, r, e), this.#T && this.#v?.push([
+					n,
+					r,
+					e
+				]);
+			}
+		}
+		if (this.#u.clear(), this.#f.fill(void 0), this.#d.fill(void 0), this.#x && this.#b) {
+			this.#x.fill(0), this.#b.fill(0);
+			for (let e of this.#S ?? []) e !== void 0 && clearTimeout(e);
+			this.#S?.fill(void 0);
+		}
+		if (this.#y && this.#y.fill(0), this.#h = 0, this.#g = 0, this.#_.length = 0, this.#l = 0, this.#c = 0, this.#T && this.#v) {
+			let e = this.#v, t;
+			for (; t = e?.shift();) this.#i?.(...t);
+		}
+	}
+}, _ = class t {
+	#e;
+	#t;
+	constructor(e) {
+		let t = {
+			max: 500,
+			ttl: 3e5,
+			allowStale: !1,
+			updateAgeOnGet: !0,
+			updateAgeOnHas: !1
+		};
+		this.#e = new g(t), this.#t = e;
+	}
+	static async create(n) {
+		let r = new URL(n.url), i = await e.create(r);
+		return new t(i);
+	}
+	get fileSize() {
+		return this.#t.fileSize;
+	}
+	get pageSize() {
+		return this.#t.pageSize;
+	}
+	async openDb() {
+		await this.#t.openDb();
+	}
+	async getBlock(e, t) {
+		let n = Math.floor(e / this.pageSize), r = e % this.pageSize, i = this.#e.get(n);
+		if (i !== void 0) return i.subarray(r, r + t);
+		{
+			let i = await this.#t.getPage(n);
+			return this.#e.set(n, i), t === this.pageSize ? i : i.subarray(e, r + t);
+		}
+	}
+}, v = class e extends t {
+	mapIdToFile = /* @__PURE__ */ new Map();
+	static async create(t, n, r) {
+		/*!
+		* Copyright (c) 2026 T.C YU
+		* Licensed under the BSD-3-Clause License.
+		*
+		* Modified from example VFS code from wa-sqlite:
+		* Copyright (c) 2024 Roy T. Hashimoto
+		* Licensed under the MIT License.
+		*
+		* SPDX-License-Identifier: BSD-3-Clause AND MIT
+		*/
+		let i = await _.create(r), a = new e(t, n, i);
+		return await a.isReady(), a;
+	}
+	#e;
+	constructor(e, t, n) {
+		super(e, t), this.#e = n;
 	}
 	async close() {
 		for (let e of this.mapIdToFile.keys()) this.jClose(e);
 	}
-	async jOpen(e, n, r, i) {
-		let a = new URL(this.#n.url);
-		if (this.mapIdToFile.set(n, a), this.#n.serverMode === "full") {
-			this.#n, console.log(a);
-			let e = await fetch(a, { method: "HEAD" });
-			if (!e.ok) return console.log("failed"), t.SQLITE_CANTOPEN;
-			let n = e.headers.get("content-length"), r = n ? parseInt(n, 10) : 0, i = Math.min(r, 100), o = await (await fetch(this.#n.url, { headers: { Range: `bytes=0-${i - 1}` } })).arrayBuffer(), s = new Uint8Array(o), c = s[16] << 8 | s[17];
-			this.#t = c;
-			let l = s[28] << 24 | s[29] << 16 | s[30] << 8 | s[31];
-			l === 0 ? (console.warn("in-header database size is 0, this db is likely a pre-3.7.0 SQLite DB, consider populating headers with a newer version of SQLite"), this.#e = r) : c * l === r ? this.#e = c * l : (console.warn("Page count * page size not matching remote content-length, consider checking DB integrity, using remote content-length as filesize"), this.#e = r);
+	async jOpen(e, t, r, i) {
+		try {
+			await this.#e.openDb();
+		} catch {
+			return n.SQLITE_CANTOPEN;
 		}
-		return i.setInt32(0, r | t.SQLITE_OPEN_READONLY, !0), t.SQLITE_OK;
+		return i.setInt32(0, r | n.SQLITE_OPEN_READONLY, !0), n.SQLITE_OK;
 	}
 	async jClose(e) {
-		return t.SQLITE_OK;
+		return n.SQLITE_OK;
 	}
-	async jRead(e, n, r) {
-		let i = this.fileSize, { url: a } = this.#n;
-		if (r >= i) return t.SQLITE_IOERR_SHORT_READ;
-		let o = Math.min(n.byteLength, i - r), s = r + o - 1;
-		try {
-			let e = await fetch(a, { headers: { Range: `bytes=${r}-${s}` } });
-			if (!e.ok && e.status !== 206) return t.SQLITE_IOERR_READ;
-			let i = await e.arrayBuffer(), c = new Uint8Array(i, 0, o);
-			return n.set(c), t.SQLITE_OK;
-		} catch (e) {
-			return console.error("Network error during xRead:", e), t.SQLITE_IOERR_READ;
-		}
+	async jRead(e, t, r) {
+		if (r >= this.#e.fileSize) return n.SQLITE_IOERR_SHORT_READ;
+		let i = await this.#e.getBlock(r, t.byteLength);
+		return t.set(i), n.SQLITE_OK;
 	}
-	async jFileSize(e, n) {
-		let r = this.fileSize;
-		return n.setBigInt64(0, BigInt(r), !0), t.SQLITE_OK;
+	async jFileSize(e, t) {
+		let r = this.#e.fileSize;
+		return t.setBigInt64(0, BigInt(r), !0), n.SQLITE_OK;
 	}
-	async jAccess(e, n, r) {
-		return (e.endsWith("-journal") || e.endsWith("-wal") || n === t.SQLITE_ACCESS_READWRITE) && r.setInt32(0, 0, !0), t.SQLITE_OK;
+	async jAccess(e, t, r) {
+		return (e.endsWith("-journal") || e.endsWith("-wal") || t === n.SQLITE_ACCESS_READWRITE) && r.setInt32(0, 0, !0), n.SQLITE_OK;
 	}
 };
-export { n as HttpRangeVFS };
+export { v as HttpRangeVFS };

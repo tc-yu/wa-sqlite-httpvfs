@@ -15,8 +15,9 @@
 
 export abstract class HttpLayer {
   abstract checkDB(url: URL): Promise<void>;
-  abstract openDb(): Promise<void>;
-  abstract getBlock(index: number): Promise<Uint8Array>;
+  abstract openDb(): Promise<Uint8Array>;
+  // abstract getBlock(index: number, byteLength: number): Promise<Uint8Array>;
+  abstract getPage(pageNumber: number): Promise<Uint8Array>;
 }
 
 export class FullDbHttpLayer extends HttpLayer {
@@ -48,7 +49,6 @@ export class FullDbHttpLayer extends HttpLayer {
   static async create(url: URL): Promise<FullDbHttpLayer> {
     const httpLayer = new FullDbHttpLayer(url);
     await httpLayer.checkDB(url);
-
     return httpLayer;
   }
 
@@ -61,7 +61,6 @@ export class FullDbHttpLayer extends HttpLayer {
     ))
       throw new Error("Couldn't load " + url + ". Status: " + response.status);
 
-    console.log(response.headers);
     const contentLength = response.headers.get("content-length");
     const remoteFileSize = contentLength ? parseInt(contentLength, 10) : 0;
 
@@ -69,21 +68,21 @@ export class FullDbHttpLayer extends HttpLayer {
 
     // console.log(remoteFileSize);
 
-    var hasByteServing = response.headers.get("Accept-Ranges") === "bytes";
-    const encoding = response.headers.get("Content-Encoding");
-    var usesCompression = encoding && encoding !== "identity";
+    // var hasByteServing = response.headers.get("Accept-Ranges") === "bytes";
+    // const encoding = response.headers.get("Content-Encoding");
+    // var usesCompression = encoding && encoding !== "identity";
 
-    if (!hasByteServing) {
-      const msg =
-        "Warning: The server did not respond with Accept-Ranges=bytes. It either does not support byte serving or does not advertise it (`Accept-Ranges: bytes` header missing), or your database is hosted on CORS and the server doesn't mark the accept-ranges header as exposed. This may lead to incorrect results.";
-      console.warn(msg, "(seen response headers:", response.headers, ")");
-      // throw Error(msg);
-    }
-    if (usesCompression) {
-      console.warn(
-        `Warning: The server responded with ${encoding} encoding to a HEAD request. Ignoring since it may not do so for Range HTTP requests, but this will lead to incorrect results otherwise since the ranges will be based on the compressed data instead of the uncompressed data.`,
-      );
-    }
+    // if (!hasByteServing) {
+    //   const msg =
+    //     "Warning: The server did not respond with Accept-Ranges=bytes. It either does not support byte serving or does not advertise it (`Accept-Ranges: bytes` header missing), or your database is hosted on CORS and the server doesn't mark the accept-ranges header as exposed. This may lead to incorrect results.";
+    //   console.warn(msg, "(seen response headers:", response.headers, ")");
+    //   // throw Error(msg);
+    // }
+    // if (usesCompression) {
+    //   console.warn(
+    //     `Warning: The server responded with ${encoding} encoding to a HEAD request. Ignoring since it may not do so for Range HTTP requests, but this will lead to incorrect results otherwise since the ranges will be based on the compressed data instead of the uncompressed data.`,
+    //   );
+    // }
 
     // if (usesCompression) {
     //   // can't use the given data length if there's compression
@@ -102,17 +101,16 @@ export class FullDbHttpLayer extends HttpLayer {
     // this.serverChecked = true;
   }
 
-  async openDb(): Promise<void> {
+  async openDb(): Promise<Uint8Array> {
     const url = this.url;
 
-    const headerSize = Math.min(this.fileSize, 100);
-    const response2 = await fetch(url, {
+    const response = await fetch(url, {
       headers: {
-        Range: `bytes=0-${headerSize - 1}`,
+        Range: `bytes=0-99`,
       },
     });
 
-    const headerBuf = await response2.arrayBuffer();
+    const headerBuf = await response.arrayBuffer();
     const bytes = new Uint8Array(headerBuf);
     // SQLITE store page size at byte 16-17
     const rawPageSize = (bytes[16] << 8) | bytes[17];
@@ -121,6 +119,8 @@ export class FullDbHttpLayer extends HttpLayer {
     // SQLITE store page count at byte 28-31
     const totalPages =
       (bytes[28] << 24) | (bytes[29] << 16) | (bytes[30] << 8) | bytes[31];
+
+    this.#_fileSize = totalPages * rawPageSize;
 
     if (totalPages === 0) {
       console.warn(
@@ -135,11 +135,23 @@ export class FullDbHttpLayer extends HttpLayer {
       );
       //   this.#_fileSize = remoteFileSize;
     }
+
+    return bytes;
   }
 
-  async getBlock(index: number): Promise<Uint8Array> {
-    console.log(index);
-    return new Uint8Array();
+  async getPage(pageNumber: number): Promise<Uint8Array> {
+    const iOffset = pageNumber * this.pageSize;
+    const endOffset = iOffset + this.pageSize - 1;
+
+    const response = await fetch(this.url, {
+      headers: {
+        Range: `bytes=${iOffset}-${endOffset}`,
+      },
+    });
+
+    const buffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(buffer, 0, this.pageSize);
+    return bytes;
   }
 }
 

@@ -3,7 +3,6 @@ import MyWorker from "./worker.ts?worker";
 const worker = new MyWorker();
 
 const pendingRequests = new Map();
-
 worker.onmessage = (event) => {
   const { id, result, error } = event.data;
   const handlers = pendingRequests.get(id);
@@ -34,13 +33,16 @@ const button = document.querySelector<HTMLButtonElement>("#update-btn")!;
 const result = document.querySelector<HTMLParagraphElement>("#result")!;
 
 console.log(input.value);
-worker.postMessage(21);
-
+// console.log(await runInWorker(input.value))
 button.addEventListener("click", async () => {
   button.disabled = true;
   result.textContent = "Loading...";
   try {
-    result.textContent = JSON.stringify(await runInWorker(input.value));
+    result.textContent = JSON.stringify(
+      await runInWorker(input.value),
+      null,
+      2,
+    );
   } catch (error) {
     result.textContent = `Error: ${error instanceof Error ? error.message : String(error)}`;
   } finally {

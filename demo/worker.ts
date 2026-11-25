@@ -1,7 +1,7 @@
 import SQLiteESMFactory from "wa-sqlite/dist/wa-sqlite-async.mjs";
 import * as SQLite from "wa-sqlite";
 import { HttpRangeVFS } from "../dist/";
-
+// import { HttpRangeVFS } from "../src/HttpRangeVFS";
 let sqlite3: SQLiteAPI;
 let db: number;
 
@@ -25,13 +25,24 @@ const ready = init();
 self.onmessage = async (event) => {
   await ready;
   const { id, payload } = event.data;
-  const result: (string | null)[] = [];
+  // const result: (string | null)[] = [];
+  const result = [];
 
   console.log(payload);
 
-  await sqlite3.exec(db, payload, (row) => {
-    result.push(row[0] as string | null);
+  // await sqlite3.exec(db, payload, (row) => {
+  //   result.push(row[0] as string | null);
+  // });
+
+  await sqlite3.exec(db, payload, (row, columns) => {
+    const rowObject = {};
+    columns.forEach((col, index) => {
+      rowObject[col] = row[index];
+    });
+    result.push(rowObject);
   });
+
+  console.log(result);
 
   self.postMessage({ id, result });
 };

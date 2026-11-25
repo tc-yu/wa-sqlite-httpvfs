@@ -14,8 +14,8 @@
  */
 export declare abstract class HttpLayer {
     abstract checkDB(url: URL): Promise<void>;
-    abstract openDb(): Promise<void>;
-    abstract getBlock(index: number): Promise<Uint8Array>;
+    abstract openDb(): Promise<Uint8Array>;
+    abstract getPage(pageNumber: number): Promise<Uint8Array>;
 }
 export declare class FullDbHttpLayer extends HttpLayer {
     #private;
@@ -25,6 +25,6 @@ export declare class FullDbHttpLayer extends HttpLayer {
     constructor(url: URL);
     static create(url: URL): Promise<FullDbHttpLayer>;
     checkDB(url: URL): Promise<void>;
-    openDb(): Promise<void>;
-    getBlock(index: number): Promise<Uint8Array>;
+    openDb(): Promise<Uint8Array>;
+    getPage(pageNumber: number): Promise<Uint8Array>;
 }
