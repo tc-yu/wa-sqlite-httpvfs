@@ -5,7 +5,7 @@
   "type": "module",
   "license": "BSD-3-Clause",
   "files": [
-    "ACKNOWLEDGMENTS",
+    "ACKNOWLEDGMENTS.md",
     "Third-Party-License",
     "dist/*"
   ],
