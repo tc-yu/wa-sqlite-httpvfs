@@ -1,3 +1,5 @@
+/// <reference path="./wa-sqlite.d.ts" />
+
 /*!
  * Copyright (c) 2026 T.C YU
  * Licensed under the BSD-3-Clause License.
@@ -8,6 +10,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause AND MIT
  */
+
 import { FacadeVFS } from "wa-sqlite/src/FacadeVFS.js";
 import * as SQLite from "wa-sqlite";
 

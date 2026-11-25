@@ -1,44 +1,53 @@
-declare module 'wa-sqlite/src/FacadeVFS.js' {
+// import * as SQLite from "wa-sqlite";
+
+declare module "wa-sqlite/src/FacadeVFS.js" {
+  export interface FacadeVFS extends SQLiteVFS {}
   export class FacadeVFS {
-    name: string;
-    mxPathname: number;
-
-    constructor(name: string, module: unknown);
-
-    isReady(): Promise<void>;
+    constructor(name: string, module: object);
 
     jOpen(
-      zName: string | null,
-      fileId: number,
+      filename: string | null,
+      pFile: number,
       flags: number,
-      pOutFlags: DataView
+      pOutFlags: DataView,
     ): number | Promise<number>;
 
-    jClose(fileId: number): number | Promise<number>;
+    jClose(pFile: number): number | Promise<number>;
 
     jRead(
-      fileId: number,
+      pFile: number,
       pData: Uint8Array,
-      iOffset: number
+      iOffset: number,
     ): number | Promise<number>;
 
     jWrite(
-      fileId: number,
+      pFile: number,
       pData: Uint8Array,
-      iOffset: number
+      iOffset: number,
     ): number | Promise<number>;
 
-    jTruncate(fileId: number, iSize: number): number | Promise<number>;
-    jSync(fileId: number, flags: number): number | Promise<number>;
-    jFileSize(fileId: number, pSize64: DataView): number | Promise<number>;
-    jLock(fileId: number, flags: number): number | Promise<number>;
-    jUnlock(fileId: number, flags: number): number | Promise<number>;
-    jCheckReservedLock(fileId: number, pResOut: DataView): number | Promise<number>;
-    jFileControl(fileId: number, op: number, pArg: DataView): number | Promise<number>;
-    jSectorSize(fileId: number): number;
-    jDeviceCharacteristics(fileId: number): number;
-    jDelete(zName: string, syncDir: number): number | Promise<number>;
-    jAccess(zName: string, flags: number, pResOut: DataView): number | Promise<number>;
-    jFullPathname(zName: string, zOut: Uint8Array): number | Promise<number>;
+    jTruncate(pFile: number, iSize: number): number | Promise<number>;
+    jSync(pFile: number, flags: number): number | Promise<number>;
+    jFileSize(pFile: number, pSize64: DataView): number | Promise<number>;
+    jLock(pFile: number, flags: number): number | Promise<number>;
+    jUnlock(pFile: number, flags: number): number | Promise<number>;
+    jCheckReservedLock(
+      pFile: number,
+      pResOut: DataView,
+    ): number | Promise<number>;
+    jFileControl(
+      pFile: number,
+      op: number,
+      pArg: DataView,
+    ): number | Promise<number>;
+    jSectorSize(pFile: number): number;
+    jDeviceCharacteristics(pFile: number): number;
+    jDelete(filename: string, syncDir: number): number | Promise<number>;
+    jAccess(
+      filename: string,
+      flags: number,
+      pResOut: DataView,
+    ): number | Promise<number>;
+    jFullPathname(filename: string, zOut: Uint8Array): number | Promise<number>;
   }
 }

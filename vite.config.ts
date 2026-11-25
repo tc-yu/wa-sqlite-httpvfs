@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
@@ -52,4 +53,19 @@ export default defineConfig({
       },
     },
   },
+  plugins: [
+    {
+      name: "emit-custom-dts",
+      generateBundle() {
+        this.emitFile({
+          type: "asset",
+          fileName: "wa-sqlite.d.ts", // Output path relative to dist/
+          source: readFileSync(
+            resolve(import.meta.dirname, "src/wa-sqlite.d.ts"),
+            "utf-8",
+          ),
+        });
+      },
+    },
+  ],
 });
