@@ -1,3 +1,14 @@
+/*!
+ * Copyright (c) 2026 T.C YU
+ * Licensed under the BSD-3-Clause License.
+ *
+ * Type definitaions of FacadeVFS from wa-sqlite:
+ * Copyright (c) 2024 Roy T. Hashimoto
+ * Licensed under the MIT License.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause AND MIT
+ */
+
 declare module "wa-sqlite/src/FacadeVFS.js" {
   export interface FacadeVFS extends SQLiteVFS {}
   export class FacadeVFS {

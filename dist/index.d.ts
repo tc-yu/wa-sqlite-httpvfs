@@ -1,2 +1,2 @@
 import "./wa-sqlite.d.ts";
-export { HttpRangeVFS } from "./HttpRangeVFS.ts";
+export { HttpRangeVFS } from "./HttpRangeVFS.js";
