@@ -27,3 +27,5 @@ dist-ssr
 *.db
 !demo/public/northwind.db
 *.sqlite
+db_chunks
+generate-db.ts

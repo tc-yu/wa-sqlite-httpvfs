@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
+    "strict": true,
+
     "target": "es2023",
     "module": "esnext",
     "lib": ["ES2023", "DOM"],
     "types": ["vite/client", "node"],
-    "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -20,8 +21,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
 
-    "allowJs": true,
-    "maxNodeModuleJsDepth": 2
+
   },
-  "include": ["src", "demo/main.ts"]
+  "include": ["src"]
 }

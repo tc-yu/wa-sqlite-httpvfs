@@ -3,15 +3,19 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "license": "BSD-3-Clause",
   "files": [
     "ACKNOWLEDGMENTS",
     "Third-Party-License",
     "dist/*"
   ],
+  "bin": {
+    "prepare_db": "dist/prepareDb.js"
+  },
   "scripts": {
     "dev": "vite ./demo",
-    "build": "tsc && vite build",
-    "build:demo": "tsc && vite build demo",
+    "build": "tsc && vite build --app && tsc -p tsconfig.build.json",
+    "build:demo": "tsc -p demo && vite build demo",
     "preview:demo": "vite preview demo",
     "format": "prettier . --write"
   },
@@ -20,9 +24,15 @@
     "prettier": "3.10.1",
     "typescript": "~7.0.2",
     "vite": "^8.3.5",
-    "wa-sqlite": "github:rhashimoto/wa-sqlite#v1.2.0"
+    "wa-sqlite": "github:rhashimoto/wa-sqlite#4631745762f5e24d226254158e5ceada2d5fbe1e"
   },
   "peerDependencies": {
-    "wa-sqlite": "github:rhashimoto/wa-sqlite#v1.2.0"
+    "wa-sqlite": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "lru-cache": "^11.5.3"
   }
 }

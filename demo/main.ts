@@ -1,34 +1,28 @@
-import SQLiteESMFactory from "wa-sqlite/dist/wa-sqlite-async.mjs";
-import * as SQLite from "wa-sqlite";
-import { HttpRangeVFS as MyVFS } from "../src/HttpRangeVFS.js";
+import MyWorker from "./worker.ts?worker";
 
-async function hello(query: string) {
-  const module = await SQLiteESMFactory();
-  const sqlite3 = SQLite.Factory(module);
+const worker = new MyWorker();
 
-  const vfs = await MyVFS.create(
-    "hello",
-    module,
-    "http://localhost:5173/northwind.db",
-  );
+const pendingRequests = new Map();
+worker.onmessage = (event) => {
+  const { id, result, error } = event.data;
+  const handlers = pendingRequests.get(id);
 
-  sqlite3.vfs_register(vfs, true);
+  if (!handlers) return;
+  pendingRequests.delete(id);
 
-  const db = await sqlite3.open_v2("test", SQLite.SQLITE_OPEN_READONLY);
+  if (error) {
+    handlers.reject(new Error(error));
+  } else {
+    handlers.resolve(result);
+  }
+};
 
-  const schemas: (string | null)[] = [];
-
-  console.log(query);
-
-  await sqlite3.exec(db, query, (row) => {
-    schemas.push(row[0] as string | null);
+function runInWorker(payload: string) {
+  return new Promise((resolve, reject) => {
+    const id = crypto.randomUUID();
+    pendingRequests.set(id, { resolve, reject });
+    worker.postMessage({ id, payload });
   });
-
-  console.log(schemas);
-
-  await sqlite3.close(db);
-
-  return schemas;
 }
 
 // document.body.textContent = JSON.stringify(await hello());
@@ -39,13 +33,16 @@ const button = document.querySelector<HTMLButtonElement>("#update-btn")!;
 const result = document.querySelector<HTMLParagraphElement>("#result")!;
 
 console.log(input.value);
-
+// console.log(await runInWorker(input.value))
 button.addEventListener("click", async () => {
   button.disabled = true;
   result.textContent = "Loading...";
-
   try {
-    result.textContent = JSON.stringify(await hello(input.value));
+    result.textContent = JSON.stringify(
+      await runInWorker(input.value),
+      null,
+      2,
+    );
   } catch (error) {
     result.textContent = `Error: ${error instanceof Error ? error.message : String(error)}`;
   } finally {
