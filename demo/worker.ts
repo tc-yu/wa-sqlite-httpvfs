@@ -26,21 +26,24 @@ self.onmessage = async (event) => {
   await ready;
   const { id, payload } = event.data;
   // const result: (string | null)[] = [];
-  const result = [];
-
+  const result: Record<string, SQLiteCompatibleType>[] = [];
   console.log(payload);
 
   // await sqlite3.exec(db, payload, (row) => {
   //   result.push(row[0] as string | null);
   // });
 
-  await sqlite3.exec(db, payload, (row, columns) => {
-    const rowObject = {};
-    columns.forEach((col, index) => {
-      rowObject[col] = row[index];
-    });
-    result.push(rowObject);
-  });
+  await sqlite3.exec(
+    db,
+    payload,
+    (row: SQLiteCompatibleType[], columns: string[]) => {
+      const rowObject: Record<string, SQLiteCompatibleType> = {};
+      columns.forEach((col, index) => {
+        rowObject[col] = row[index];
+      });
+      result.push(rowObject);
+    },
+  );
 
   console.log(result);
 

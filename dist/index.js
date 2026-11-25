@@ -1,4 +1,4 @@
-import { t as e } from "./HttpHelper-D1W7SV9P.js";
+import { FullDbHttpLayer as e } from "./HttpHelper.js";
 import { FacadeVFS as t } from "wa-sqlite/src/FacadeVFS.js";
 import * as n from "wa-sqlite";
 // node_modules/.pnpm/lru-cache@11.5.3/node_modules/lru-cache/dist/esm/browser/index.min.js

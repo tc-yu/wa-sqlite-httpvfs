@@ -154,20 +154,3 @@ export class FullDbHttpLayer extends HttpLayer {
     return bytes;
   }
 }
-
-if (import.meta.main) {
-  // Runs only when executed directly (`node math.js`), not when imported
-  //   console.log("hi");
-  const http_ = await FullDbHttpLayer.create(
-    // new URL(
-    //   "https://data.mudyear.com/search/entities/202611210003047929315a/entity_search.sqlite.000",
-    // ),
-    new URL("http://localhost:5173/northwind.db"),
-  );
-
-  http_.openDb();
-
-  console.log(http_);
-
-  //   http_.checkDB(http_.url);
-}
