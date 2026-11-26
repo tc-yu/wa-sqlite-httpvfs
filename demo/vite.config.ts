@@ -29,6 +29,7 @@ export default defineConfig({
   input: {
     main: resolve(import.meta.dirname, "index.html"),
     fullDb: resolve(import.meta.dirname, "full-db/index.html"),
+    chunkedDb: resolve(import.meta.dirname, "chunked-db/index.html"),
   },
   appType: "mpa",
 });

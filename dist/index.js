@@ -687,7 +687,60 @@ var n = { hasSubscribers: !1 }, r = n, i = n, a = typeof performance == "object"
 		let t = e * this.pageSize, n = t + this.pageSize - 1, r = await (await fetch(this.url, { headers: { Range: `bytes=${t}-${n}` } })).arrayBuffer();
 		return new Uint8Array(r, 0, this.pageSize);
 	}
-}, v = class e {
+}, v = class e extends g {
+	#e;
+	#t;
+	#n;
+	get fileSize() {
+		/*!
+		* Copyright (c) 2026 T.C YU
+		* Licensed under the BSD-3-Clause License.
+		*
+		* Contains code derived from sql.js-httpvfs:
+		* Copyright (c) phiresky
+		* Licensed under Apache-2.0 (see Third-Party-License/Apache-License-2.0).
+		*
+		* * Modifications:
+		* - Convert the XHR requests to fetch API
+		* - Dynamic discover of DB size and page size
+		*
+		* SPDX-License-Identifier: BSD-3-Clause AND Apache-2.0
+		*/
+		if (this.#e === void 0) throw Error("File size not properly discoverd");
+		return this.#e;
+	}
+	get pageSize() {
+		if (this.#t === void 0) throw Error("Page size not properly discoverd");
+		return this.#t;
+	}
+	constructor(e) {
+		super(), this.#n = e;
+	}
+	static async create(t) {
+		let n = new e(t), r = new URL(`${t.urlPrefix}${"0".repeat(t.suffixLength)}`);
+		return await n.checkDB(r), n;
+	}
+	async checkDB(e) {
+		let t = await fetch(e, { method: "HEAD" });
+		if (!(t.status >= 200 && t.status < 300 || t.status === 304)) throw Error("Couldn't load " + e + ". Status: " + t.status);
+		let n = t.headers.get("content-length"), r = n ? parseInt(n, 10) : 0;
+		r !== this.#n.serverChunkSize && (console.warn(`Remote file size is ${r}, not matching provided serverChunkSize: ${this.#n.serverChunkSize}, using discovered value instead`), this.#n.serverChunkSize = r);
+	}
+	async openDb() {
+		let e = new URL(`${this.#n.urlPrefix}${"0".repeat(this.#n.suffixLength)}`), t = await (await fetch(e, { headers: { Range: "bytes=0-99" } })).arrayBuffer(), n = new Uint8Array(t), r = n[16] << 8 | n[17];
+		this.#t = r;
+		let i = n[28] << 24 | n[29] << 16 | n[30] << 8 | n[31];
+		return this.#e = i * r, i === 0 ? console.warn("in-header database size is 0, this db is likely a pre-3.7.0 SQLite DB, consider populating headers with a newer version of SQLite") : r * i !== this.fileSize && console.warn("Page count * page size not matching remote content-length, consider checking DB integrity, using remote content-length as filesize"), n;
+	}
+	computeUrl(e) {
+		let t = this.#n.serverChunkSize / this.pageSize, n = Math.floor(e / t), r = String(n).padStart(this.#n.suffixLength, "0");
+		return new URL(`${this.#n.urlPrefix}${r}`);
+	}
+	async getPage(e) {
+		let t = e * this.pageSize % this.#n.serverChunkSize, n = t + this.pageSize - 1, r = await (await fetch(this.computeUrl(e), { headers: { Range: `bytes=${t}-${n}` } })).arrayBuffer();
+		return new Uint8Array(r, 0, this.pageSize);
+	}
+}, y = class e {
 	#e;
 	#t;
 	constructor(e) {
@@ -701,8 +754,14 @@ var n = { hasSubscribers: !1 }, r = n, i = n, a = typeof performance == "object"
 		this.#e = new h(t), this.#t = e;
 	}
 	static async create(t) {
-		let n = new URL(t.url), r = await _.create(n);
-		return new e(r);
+		if (t.serverMode === "full") {
+			let n = new URL(t.url), r = await _.create(n);
+			return new e(r);
+		}
+		{
+			let n = await v.create(t);
+			return new e(n);
+		}
 	}
 	get fileSize() {
 		return this.#t.fileSize;
@@ -721,7 +780,7 @@ var n = { hasSubscribers: !1 }, r = n, i = n, a = typeof performance == "object"
 			return this.#e.set(n, i), t === this.pageSize ? i : i.subarray(e, r + t);
 		}
 	}
-}, y = class n extends e {
+}, b = class n extends e {
 	mapIdToFile = /* @__PURE__ */ new Map();
 	static async create(e, t, r) {
 		/*!
@@ -734,7 +793,7 @@ var n = { hasSubscribers: !1 }, r = n, i = n, a = typeof performance == "object"
 		*
 		* SPDX-License-Identifier: BSD-3-Clause AND MIT
 		*/
-		let i = await v.create(r), a = new n(e, t, i);
+		let i = await y.create(r), a = new n(e, t, i);
 		return await a.isReady(), a;
 	}
 	#e;
@@ -768,4 +827,4 @@ var n = { hasSubscribers: !1 }, r = n, i = n, a = typeof performance == "object"
 		return (e.endsWith("-journal") || e.endsWith("-wal") || n === t.SQLITE_ACCESS_READWRITE) && r.setInt32(0, 0, !0), t.SQLITE_OK;
 	}
 };
-export { g as BaseHttpLayer, _ as FullDbHttpLayer, y as HttpRangeVFS };
+export { g as BaseHttpLayer, v as ChunkDbHttpLayer, _ as FullDbHttpLayer, b as HttpRangeVFS };

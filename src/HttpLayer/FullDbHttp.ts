@@ -101,7 +101,7 @@ export class FullDbHttpLayer extends BaseHttpLayer {
 
     const response = await fetch(url, {
       headers: {
-        Range: `bytes=0-99`,
+        Range: "bytes=0-99",
       },
     });
 

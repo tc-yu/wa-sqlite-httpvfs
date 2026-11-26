@@ -1,6 +1,6 @@
 import type { DbConfig } from "../HttpRangeVFS.ts";
 import { LRUCache } from "lru-cache";
-import { FullDbHttpLayer } from "../HttpLayer";
+import { ChunkDbHttpLayer, FullDbHttpLayer } from "../HttpLayer";
 
 /**
  * Middle layer to receive block read request from VFS and create http
@@ -13,8 +13,8 @@ export interface BlockProvider {
 
 export class SimpleBlockProvider implements BlockProvider {
   #cache: LRUCache<number, Uint8Array>;
-  #httpLayer: FullDbHttpLayer;
-  constructor(httpLayer: FullDbHttpLayer) {
+  #httpLayer: FullDbHttpLayer | ChunkDbHttpLayer;
+  constructor(httpLayer: FullDbHttpLayer | ChunkDbHttpLayer) {
     const options = {
       max: 500,
 
@@ -40,10 +40,14 @@ export class SimpleBlockProvider implements BlockProvider {
   static async create(dbConfig: DbConfig): Promise<SimpleBlockProvider> {
     // console.log(dbConfig)
 
-    const url = new URL(dbConfig.url);
-    const httpLayer = await FullDbHttpLayer.create(url);
-
-    return new SimpleBlockProvider(httpLayer);
+    if (dbConfig.serverMode === "full") {
+      const url = new URL(dbConfig.url);
+      const httpLayer = await FullDbHttpLayer.create(url);
+      return new SimpleBlockProvider(httpLayer);
+    } else {
+      const httpLayer = await ChunkDbHttpLayer.create(dbConfig);
+      return new SimpleBlockProvider(httpLayer);
+    }
   }
 
   get fileSize(): number {

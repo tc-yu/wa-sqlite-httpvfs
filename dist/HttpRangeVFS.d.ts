@@ -15,7 +15,6 @@ export interface ChunkedDbConfig {
     serverMode: "chunked";
     suffixLength: number;
     urlPrefix: string;
-    url: string;
 }
 export interface FullDbConfig {
     serverMode: "full";

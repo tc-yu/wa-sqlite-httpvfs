@@ -19,7 +19,6 @@ export interface ChunkedDbConfig {
   serverMode: "chunked";
   suffixLength: number;
   urlPrefix: string; // Use urlPrefix instead of full url
-  url: string;
 }
 
 export interface FullDbConfig {
@@ -50,7 +49,6 @@ export class HttpRangeVFS extends FacadeVFS {
   ) {
     super(name, module);
     this.#blockProvider = blockProvider;
-    // this.#dbConfig = dbConfig;
   }
 
   async close() {

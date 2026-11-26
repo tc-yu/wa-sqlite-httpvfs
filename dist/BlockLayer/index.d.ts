@@ -1,5 +1,5 @@
 import type { DbConfig } from "../HttpRangeVFS.ts";
-import { FullDbHttpLayer } from "../HttpLayer";
+import { ChunkDbHttpLayer, FullDbHttpLayer } from "../HttpLayer";
 /**
  * Middle layer to receive block read request from VFS and create http
  * query or fetch from cache
@@ -10,7 +10,7 @@ export interface BlockProvider {
 }
 export declare class SimpleBlockProvider implements BlockProvider {
     #private;
-    constructor(httpLayer: FullDbHttpLayer);
+    constructor(httpLayer: FullDbHttpLayer | ChunkDbHttpLayer);
     static create(dbConfig: DbConfig): Promise<SimpleBlockProvider>;
     get fileSize(): number;
     get pageSize(): number;
