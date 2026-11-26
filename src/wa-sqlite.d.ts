@@ -1,8 +1,6 @@
 /*!
- * Type definitions of FacadeVFS from wa-sqlite:
+ * Type definitions of FacadeVFS from wa-sqlite generated with tsc
  * Copyright (c) 2024 Roy T. Hashimoto
- * Licensed under the MIT License.
- *
  * SPDX-License-Identifier: MIT
  */
 

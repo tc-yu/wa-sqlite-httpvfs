@@ -1,5 +1,5 @@
 import type { DbConfig } from "../HttpRangeVFS.ts";
-import { FullDbHttpLayer } from "../HttpHelper.ts";
+import { FullDbHttpLayer } from "../HttpLayer";
 /**
  * Middle layer to receive block read request from VFS and create http
  * query or fetch from cache

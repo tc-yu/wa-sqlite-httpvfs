@@ -1,6 +1,6 @@
 import type { DbConfig } from "../HttpRangeVFS.ts";
 import { LRUCache } from "lru-cache";
-import { FullDbHttpLayer } from "../HttpHelper.ts";
+import { FullDbHttpLayer } from "../HttpLayer";
 
 /**
  * Middle layer to receive block read request from VFS and create http
