@@ -25,8 +25,8 @@ importers:
         specifier: ^8.3.8
         version: 8.3.8(@types/node@24.19.3)
       wa-sqlite:
-        specifier: github:rhashimoto/wa-sqlite#4631745762f5e24d226254158e5ceada2d5fbe1e
-        version: https://codeload.github.com/rhashimoto/wa-sqlite/tar.gz/4631745762f5e24d226254158e5ceada2d5fbe1e
+        specifier: https://github.com/tc-yu/sqwab/releases/download/v1795690301/wa-sqlite-1.2.0.tgz
+        version: https://github.com/tc-yu/sqwab/releases/download/v1795690301/wa-sqlite-1.2.0.tgz
 
 packages:
 
@@ -463,8 +463,8 @@ packages:
       yaml:
         optional: true
 
-  wa-sqlite@https://codeload.github.com/rhashimoto/wa-sqlite/tar.gz/4631745762f5e24d226254158e5ceada2d5fbe1e:
-    resolution: {gitHosted: true, integrity: sha512-uAcZZLDRlatslTx4qbzi2D3SX40b9apMLtx61iEgSjGHuevjEBO8tcVHQvJKd9uIRU+sJI/nTQ28ppmdeeZIgQ==, tarball: https://codeload.github.com/rhashimoto/wa-sqlite/tar.gz/4631745762f5e24d226254158e5ceada2d5fbe1e}
+  wa-sqlite@https://github.com/tc-yu/sqwab/releases/download/v1795690301/wa-sqlite-1.2.0.tgz:
+    resolution: {integrity: sha512-znuNNQh2PuTUSJ+f+5WtDkQyyDN4qrUqpHlWen5LSnJhNfMF6mFCxeiJzyMJ1BRPy4KFuVNoz/vTZPb+bphD4g==, tarball: https://github.com/tc-yu/sqwab/releases/download/v1795690301/wa-sqlite-1.2.0.tgz}
     version: 1.2.0
 
 snapshots:
@@ -759,4 +759,4 @@ snapshots:
       '@types/node': 24.19.3
       fsevents: 2.3.3
 
-  wa-sqlite@https://codeload.github.com/rhashimoto/wa-sqlite/tar.gz/4631745762f5e24d226254158e5ceada2d5fbe1e: {}
+  wa-sqlite@https://github.com/tc-yu/sqwab/releases/download/v1795690301/wa-sqlite-1.2.0.tgz: {}

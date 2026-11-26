@@ -1,5 +1,5 @@
 // import SQLiteESMFactory from "../../vendor/wa-sqlite/dist/wa-sqlite-async.mjs";
-import SQLiteESMFactory from "../../vendor/wa-sqlite/wa-sqlite-async.mjs"
+import SQLiteESMFactory from "wa-sqlite/dist/wa-sqlite-async.mjs"
 import * as SQLite from "wa-sqlite";
 // import { HttpRangeVFS } from "../../dist";
 import { HttpRangeVFS } from "../../src/HttpRangeVFS";
