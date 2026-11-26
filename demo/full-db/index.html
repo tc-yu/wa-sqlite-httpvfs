@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>wa-sqlite-http-vfs</title>
+    <style>
+      .query-box {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      #text-input {
+        width: 100%;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="query-box">
+      <textarea
+        id="text-input"
+        rows="4"
+        placeholder="SELECT * FROM Customers LIMIT 10;"
+        autocomplete="off"
+      >
+SELECT * FROM Customers LIMIT 10;</textarea>
+      <button id="update-btn" type="button">Update</button>
+    </div>
+
+    <pre id="result"></pre>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

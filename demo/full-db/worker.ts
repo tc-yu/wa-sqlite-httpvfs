@@ -1,7 +1,7 @@
 import SQLiteESMFactory from "wa-sqlite/dist/wa-sqlite-async.mjs";
 import * as SQLite from "wa-sqlite";
-import { HttpRangeVFS } from "../dist/";
-// import { HttpRangeVFS } from "../src/HttpRangeVFS";
+import { HttpRangeVFS } from "../../dist";
+// import { HttpRangeVFS } from "../../src/HttpRangeVFS";
 let sqlite3: SQLiteAPI;
 let db: number;
 

@@ -30,7 +30,7 @@ function runInWorker(payload: string) {
 
 const input = document.querySelector<HTMLInputElement>("#text-input")!;
 const button = document.querySelector<HTMLButtonElement>("#update-btn")!;
-const result = document.querySelector<HTMLParagraphElement>("#result")!;
+const result = document.querySelector<HTMLPreElement>("#result")!;
 
 console.log(input.value);
 // console.log(await runInWorker(input.value))

@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
@@ -24,6 +25,10 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ["wa-sqlite"],
+  },
+  input: {
+    main: resolve(import.meta.dirname, "index.html"),
+    fullDb: resolve(import.meta.dirname, "full-db/index.html"),
   },
   appType: "mpa",
 });
